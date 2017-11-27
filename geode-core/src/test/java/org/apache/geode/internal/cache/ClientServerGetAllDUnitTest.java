@@ -24,6 +24,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -289,6 +293,14 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     checkServerForOrphans(server, regionName);
 
     stopBridgeServer(server);
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.UnitTestValueHolder");
+    return properties;
   }
 
   @Test
@@ -694,9 +706,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       @Override
       public void run2() throws CacheException {
         // Create DS
-        Properties config = new Properties();
-        config.setProperty(LOCATORS,
-            "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+        Properties config = getDistributedSystemProperties();
         if (offheap) {
           config.setProperty(OFF_HEAP_MEMORY_SIZE, "350m");
         }
@@ -799,17 +809,12 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       @Override
       public void run2() throws CacheException {
         // Create DS
-        Properties config = new Properties();
-        config.setProperty(MCAST_PORT, "0");
-        config.setProperty(LOCATORS, "");
-        getSystem(config);
+        Properties config = getDistributedSystemProperties();
+        ClientCache clientCache = getClientCache(new ClientCacheFactory(config));
 
         // Create Region
-        AttributesFactory factory = new AttributesFactory();
-        factory.setScope(Scope.LOCAL);
-        if (proxy) {
-          factory.setDataPolicy(DataPolicy.EMPTY);
-        }
+        ClientRegionFactory factory = clientCache.createClientRegionFactory(
+            proxy ? ClientRegionShortcut.PROXY : ClientRegionShortcut.CACHING_PROXY);
         {
           PoolFactory pf = PoolManager.createFactory();
           for (int i = 0; i < serverPorts.length; i++) {
@@ -821,7 +826,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           pf.create("myPool");
         }
         factory.setPoolName("myPool");
-        createRootRegion(regionName, factory.create());
+        factory.create(regionName);
       }
     });
   }

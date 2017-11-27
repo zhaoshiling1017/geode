@@ -153,7 +153,8 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           + ";org.apache.geode.internal.cache.persistence.PersistentMemberID" // putAll
           + ";org.apache.geode.internal.cache.persistence.DiskStoreID" // putAll
           + ";org.apache.geode.internal.cache.tier.sockets.VersionedObjectList" // putAll
-          + ";org.apache.shiro.*;org.apache.shiro.authz.*" // security services
+          + ";org.apache.shiro.*;org.apache.shiro.authz.*;org.apache.shiro.authc.*" // security
+                                                                                    // services
           + ";org.apache.geode.modules.util.SessionCustomExpiry" // geode-modules
           + ";";
 

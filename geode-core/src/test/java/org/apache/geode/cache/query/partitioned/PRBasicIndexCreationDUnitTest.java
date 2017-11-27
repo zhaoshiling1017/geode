@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -26,6 +27,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import static org.apache.geode.cache.query.Utils.*;
 
 import java.util.Collection;
+import java.util.Properties;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -77,6 +79,15 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
   final int cnt = 0, cntDest = 1003;
 
   final int redundancy = 0;
+
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.query.data.*");
+    return properties;
+  }
 
   /**
    * Tests basic index creation on a partitioned system.

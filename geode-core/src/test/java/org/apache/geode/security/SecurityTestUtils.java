@@ -81,6 +81,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.security.templates.UsernamePrincipal;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
@@ -352,6 +353,10 @@ public class SecurityTestUtils {
     authProps.setProperty(MCAST_PORT, "0");
     authProps.setProperty(LOCATORS, "");
     authProps.setProperty(SECURITY_LOG_LEVEL, "finest");
+    if (Version.CURRENT_ORDINAL >= 75) {
+      authProps.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+          UsernamePrincipal.class.getName());
+    }
     // TODO (ashetkar) Add " && (!multiUserAuthMode)" below.
     if (authInitModule != null) {
       authProps.setProperty(SECURITY_CLIENT_AUTH_INIT, authInitModule);

@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -52,14 +53,7 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 @Category(DistributedTest.class)
 public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestCase {
 
-  /**
-   * constructor *
-   * 
-   * @param name
-   */
-
   public PRQueryRegionDestroyedDUnitTest() {
-
     super();
   }
 
@@ -67,6 +61,14 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
     for (VM vm : vms) {
       vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
     }
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.query.data.*");
+    return properties;
   }
 
   PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();

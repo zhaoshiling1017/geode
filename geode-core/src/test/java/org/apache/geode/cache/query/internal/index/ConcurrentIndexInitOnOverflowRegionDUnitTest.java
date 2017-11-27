@@ -22,11 +22,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -77,11 +79,16 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends JUnit4CacheTes
 
   private static int bridgeServerPort;
 
-  /**
-   * @param name
-   */
   public ConcurrentIndexInitOnOverflowRegionDUnitTest() {
     super();
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.query.data.*");
+    return properties;
   }
 
   /**

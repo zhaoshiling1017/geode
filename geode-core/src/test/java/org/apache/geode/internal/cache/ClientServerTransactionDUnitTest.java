@@ -105,7 +105,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   public Properties getDistributedSystemProperties() {
     Properties result = super.getDistributedSystemProperties();
     result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
-        "org.apache.geode.internal.cache.ClientServerTransactionDUnitTest*"
+        result.get(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER)
+            + ";org.apache.geode.internal.cache.ClientServerTransactionDUnitTest*"
             + ";org.apache.geode.test.dunit.**" + ";org.apache.geode.test.junit.**");
     return result;
   }

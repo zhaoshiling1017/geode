@@ -19,11 +19,14 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 import static org.apache.geode.cache.query.Utils.*;
+
+import java.util.Properties;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -51,12 +54,6 @@ import org.apache.geode.test.dunit.VM;
 public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
 
 {
-  /**
-   * constructor
-   * 
-   * @param name
-   */
-
   public PRBasicQueryDUnitTest() {
     super();
   }
@@ -78,6 +75,14 @@ public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
   final int cnt = 0, cntDest = 50;
 
   final int redundancy = 0;
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.query.data.*");
+    return properties;
+  }
 
   /**
    * A very basic dunit test that <br>

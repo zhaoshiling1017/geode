@@ -255,9 +255,7 @@ public class DUnitLauncher {
     p.setProperty(MCAST_PORT, "0");
     p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     p.setProperty(USE_CLUSTER_CONFIGURATION, "false");
-    if (Version.CURRENT.ordinal() >= 75) {
-      p.setProperty(VALIDATE_SERIALIZABLE_OBJECTS, "true");
-    }
+    p.setProperty(VALIDATE_SERIALIZABLE_OBJECTS, "true");
     p.setProperty(LOG_LEVEL, logLevel);
     return p;
   }

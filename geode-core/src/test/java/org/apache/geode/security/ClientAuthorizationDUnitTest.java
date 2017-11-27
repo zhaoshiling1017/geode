@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -33,12 +34,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.generator.XmlAuthzCredentialGenerator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.security.templates.UsernamePrincipal;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.VersionManager;
@@ -291,6 +294,18 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
     // Verify that the gets succeed
     client2.invoke(() -> doGets(4, NO_EXCEPTION));
   }
+
+  // private Properties getSystemProperties(CredentialGenerator cGen) {
+  // Properties properties = cGen.getJavaProperties();
+  // if (Version.CURRENT_ORDINAL >= 75) {
+  // if (properties == null) {
+  // properties = new Properties();
+  // }
+  // properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+  // UsernamePrincipal.class.getName());
+  // }
+  // return properties;
+  // }
 
   @Test
   public void testPutsGetsWithFailover() {

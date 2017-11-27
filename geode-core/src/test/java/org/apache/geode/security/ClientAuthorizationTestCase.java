@@ -52,6 +52,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort.*;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.Version;
@@ -63,6 +64,7 @@ import org.apache.geode.security.generator.AuthzCredentialGenerator.ClassCode;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.generator.XmlAuthzCredentialGenerator;
+import org.apache.geode.security.templates.UsernamePrincipal;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
@@ -196,9 +198,9 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         authProps.setProperty(SECURITY_CLIENT_ACCESSOR, accessor);
       }
     }
-    if (Version.CURRENT.ordinal() >= 75) {
+    if (Version.CURRENT_ORDINAL >= 75) {
       authProps.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
-          "org.apache.geode.security.templates.UsernamePrincipal");
+          UsernamePrincipal.class.getName());
     }
     return concatProperties(new Properties[] {authProps, extraAuthProps, extraAuthzProps});
   }
@@ -796,11 +798,12 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
               setupDynamicRegionFactory, NO_EXCEPTION);
         } else {
           clientVM.invoke("SecurityTestUtils.createCacheClientWithDynamicRegion", () -> {
-            if (Version.CURRENT.ordinal() >= 75 /* geode-140 */) {
-              System.out.println("Adding serializable object filter to configuration for version "
-                  + Version.CURRENT.ordinal());
+            try {
+              DistributionConfig.class.getDeclaredMethod("getSerializableObjectFilter");
               clientProps.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
                   "org.apache.geode.security.templates.UsernamePrincipal");
+            } catch (NoSuchMethodException e) {
+              // running an old version of Geode
             }
             SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps, javaProps,
                 0, setupDynamicRegionFactory, NO_EXCEPTION);
