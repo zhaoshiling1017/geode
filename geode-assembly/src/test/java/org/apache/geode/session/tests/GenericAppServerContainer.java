@@ -152,7 +152,8 @@ public class GenericAppServerContainer extends ServerContainer {
     int exitCode = process.waitFor();
     // Throw error if bad exit
     if (exitCode != 0) {
-      throw new IOException("Unable to run modify_war script: " + builder.command());
+      throw new IOException(
+          "Unable to run modify_war script: " + String.join(" ", builder.command()));
     }
   }
 
