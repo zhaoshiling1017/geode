@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.remote;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -95,7 +96,7 @@ public class OnlineCommandProcessor {
     return executeCommand(command, env, null);
   }
 
-  public Result executeCommand(String command, Map<String, String> env, byte[][] binaryData) {
+  public Result executeCommand(String command, Map<String, String> env, List<String> fileNames) {
     CommentSkipHelper commentSkipper = new CommentSkipHelper();
     String commentLessLine = commentSkipper.skipComments(command);
     if (StringUtils.isEmpty(commentLessLine)) {
@@ -103,7 +104,7 @@ public class OnlineCommandProcessor {
     }
 
     CommandExecutionContext.setShellEnv(env);
-    CommandExecutionContext.setBytesFromShell(binaryData);
+    CommandExecutionContext.setFilePathToShell(fileNames);
 
     final CommandExecutor commandExecutor = getCommandExecutor();
     ParseResult parseResult = parseCommand(commentLessLine);
@@ -121,9 +122,9 @@ public class OnlineCommandProcessor {
           resourceOperation.target(), ResourcePermission.ALL);
     }
 
-    // this command processor does not exeucte command that needs fileData passed from client
+    // this command processor does not execute command that needs fileData passed from client
     CliMetaData metaData = method.getAnnotation(CliMetaData.class);
-    if (metaData != null && metaData.isFileUploaded() && binaryData == null) {
+    if (metaData != null && metaData.isFileUploaded() && fileNames == null) {
       return ResultBuilder
           .createUserErrorResult(command + " can not be executed only from server side");
     }

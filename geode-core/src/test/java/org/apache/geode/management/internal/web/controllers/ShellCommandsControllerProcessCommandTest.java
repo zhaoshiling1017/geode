@@ -18,6 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -31,7 +33,9 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
+import org.apache.geode.management.RemoteInputStreamAttribute;
 import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
@@ -53,7 +57,7 @@ public class ShellCommandsControllerProcessCommandTest {
     controller = new ShellCommandsController() {
       @Override
       protected String processCommand(String command, final Map<String, String> environment,
-          byte[][] fileData) {
+          MultipartFile[] fileData) {
         return CommandResponseBuilder.createCommandResponseJson("someMember", fakeResult);
       }
     };

@@ -84,40 +84,6 @@ public class ConvertUtilsJUnitTest {
   }
 
   @Test
-  public void testConvertFileData() throws IOException {
-    final String[] filenames = {"/path/to/file1.ext", "/path/to/another/file2.ext"};
-    final String[] fileContent =
-        {"This is the contents of file 1.", "This is the contents of file 2."};
-
-    final List<byte[]> fileData = new ArrayList<byte[]>(2);
-
-    for (int index = 0; index < filenames.length; index++) {
-      fileData.add(filenames[index].getBytes());
-      fileData.add(fileContent[index].getBytes());
-    }
-
-    final Resource[] resources =
-        ConvertUtils.convert(fileData.toArray(new byte[fileData.size()][]));
-
-    assertNotNull(resources);
-    assertEquals(filenames.length, resources.length);
-
-    for (int index = 0; index < resources.length; index++) {
-      assertEquals(filenames[index], resources[index].getFilename());
-      assertEquals(fileContent[index],
-          new String(IOUtils.toByteArray(resources[index].getInputStream())));
-    }
-  }
-
-  @Test
-  public void testConvertFileDataWithNull() {
-    final Resource[] resources = ConvertUtils.convert((byte[][]) null);
-
-    assertNotNull(resources);
-    assertEquals(0, resources.length);
-  }
-
-  @Test
   public void testConvertMultipartFile() throws IOException {
     final MultipartFile[] files = {
         createMultipartFile("/path/to/multi-part/file1.txt",

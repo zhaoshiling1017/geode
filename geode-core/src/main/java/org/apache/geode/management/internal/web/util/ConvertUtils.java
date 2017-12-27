@@ -14,12 +14,14 @@
  */
 package org.apache.geode.management.internal.web.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,7 +46,7 @@ public abstract class ConvertUtils {
    * GemFire Manager.
    * <p/>
    *
-   * @param fileData a 2 dimensional byte array of files names and file content.
+   * @param fileList a 2 dimensional byte array of files names and file content.
    * @return an array of Spring Resource objects encapsulating the details (name and content) of
    *         each file being transmitted by Gfsh to the GemFire Manager.
    * @see org.springframework.core.io.ByteArrayResource
@@ -52,25 +54,15 @@ public abstract class ConvertUtils {
    * @see org.apache.geode.management.internal.cli.CliUtil#bytesToData(byte[][])
    * @see org.apache.geode.management.internal.cli.CliUtil#bytesToNames(byte[][])
    */
-  public static Resource[] convert(final byte[][] fileData) {
-    if (fileData == null) {
+  public static Resource[] convert(final List<File> fileList) {
+    if (fileList == null) {
       return new Resource[0];
     }
 
-    final String[] fileNames = CliUtil.bytesToNames(fileData);
-    final byte[][] fileContent = CliUtil.bytesToData(fileData);
+    final List<Resource> resources = new ArrayList<Resource>();
 
-    final List<Resource> resources = new ArrayList<Resource>(fileNames.length);
-
-    for (int index = 0; index < fileNames.length; index++) {
-      final String filename = fileNames[index];
-      resources.add(new ByteArrayResource(fileContent[index],
-          String.format("Contents of JAR file (%1$s).", filename)) {
-        @Override
-        public String getFilename() {
-          return filename;
-        }
-      });
+    for (File file : fileList) {
+      resources.add(new FileSystemResource(file));
     }
 
     return resources.toArray(new Resource[resources.size()]);

@@ -20,7 +20,10 @@ import static org.apache.geode.management.internal.web.util.UriUtils.decode;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
@@ -73,8 +76,7 @@ public class ShellCommandsController extends AbstractCommandsController {
   public ResponseEntity<InputStreamResource> command(@RequestParam(value = "cmd") String command,
       @RequestParam(value = "resources", required = false) MultipartFile[] fileResource)
       throws IOException {
-    String result =
-        processCommand(decode(command), getEnvironment(), ConvertUtils.convert(fileResource));
+    String result = processCommand(decode(command), getEnvironment(), fileResource);
     return getResponse(result);
   }
 

@@ -420,7 +420,7 @@ public class HttpOperationInvoker implements OperationInvoker {
     if (command.hasFileData()) {
       MultiValueMap<String, Object> content = new LinkedMultiValueMap<String, Object>();
 
-      Resource[] resources = ConvertUtils.convert(command.getFileData());
+      Resource[] resources = ConvertUtils.convert(command.getFileList());
       for (Resource resource : resources) {
         content.add(RESOURCES_REQUEST_PARAMETER, resource);
       }

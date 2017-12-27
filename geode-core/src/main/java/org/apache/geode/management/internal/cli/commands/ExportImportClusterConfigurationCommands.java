@@ -18,7 +18,6 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -151,13 +150,11 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
               + regionsWithData.stream().collect(joining(",")));
     }
 
-    byte[][] shellBytesData = CommandExecutionContext.getBytesFromShell();
-    String zipFileName = CliUtil.bytesToNames(shellBytesData)[0];
-    byte[] zipBytes = CliUtil.bytesToData(shellBytesData)[0];
+    List<String> filePathFromShell = CommandExecutionContext.getFilePathFromShell();
 
     Result result;
     InfoResultData infoData = ResultBuilder.createInfoResultData();
-    File zipFile = new File(zipFileName);
+    File zipFile = new File(filePathFromShell.get(0));
     try {
       ClusterConfigurationService sc = locator.getSharedConfiguration();
 
@@ -167,8 +164,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
       }
       sc.renameExistingSharedConfigDirectory();
 
-      FileUtils.writeByteArrayToFile(zipFile, zipBytes);
-      ZipUtils.unzip(zipFileName, sc.getSharedConfigurationDirPath());
+      ZipUtils.unzip(zipFile.getAbsolutePath(), sc.getSharedConfigurationDirPath());
 
       // load it from the disk
       sc.loadSharedConfigurationFromDisk();
@@ -270,16 +266,14 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
             CliStrings.format(CliStrings.INVALID_FILE_EXTENSION, CliStrings.ZIP_FILE_EXTENSION));
       }
 
-      FileResult fileResult;
+      FileResult fileResult = new FileResult();
 
-      try {
-        fileResult = new FileResult(new String[] {zip});
-      } catch (FileNotFoundException fnfex) {
-        return ResultBuilder.createUserErrorResult("'" + zip + "' not found.");
-      } catch (IOException ioex) {
-        return ResultBuilder
-            .createGemFireErrorResult(ioex.getClass().getName() + ": " + ioex.getMessage());
+      File zipFile = new File(zip);
+      if (!zipFile.exists()) {
+        return ResultBuilder.createUserErrorResult(zip + " not found");
       }
+
+      fileResult.addFile(zipFile);
 
       return fileResult;
     }
