@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli.shell;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -177,7 +176,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       // when the preExecution yields a FileResult, we will get the fileData out of it
       if (preExecResult instanceof FileResult) {
         FileResult fileResult = (FileResult) preExecResult;
-        fileData = fileResult.getFile();
+        fileData = fileResult.getFiles();
       }
     }
 

@@ -34,7 +34,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
@@ -559,23 +558,6 @@ public class CliUtil {
 
     ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
     return execution.execute(function);
-  }
-
-  /***
-   * Executes a function with arguments on a single member, ignoring the departed members.
-   *
-   * @param function Function to be executed.
-   * @param args Arguments passed to the function, pass null if you wish to pass no arguments to the
-   *        function.
-   * @param member The member on which the function is to be executed.
-   *
-   * @return ResultCollector
-   */
-  public static ResultCollector<?, ?> executeFunction(Function function, Object args,
-      DistributedMember member) {
-    Set<DistributedMember> members = new HashSet<>();
-    members.add(member);
-    return executeFunction(function, args, members);
   }
 
   /**

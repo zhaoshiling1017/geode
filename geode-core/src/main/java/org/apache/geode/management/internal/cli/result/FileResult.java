@@ -52,7 +52,7 @@ public class FileResult implements Result {
     return "";
   }
 
-  public List<File> getFile() {
+  public List<File> getFiles() {
     return files;
   }
 
@@ -75,7 +75,7 @@ public class FileResult implements Result {
    * @return Comma separated list of files.
    */
   public String getFormattedFileList() {
-    return files.stream().map(File::getName).collect(Collectors.joining(","));
+    return files.stream().map(File::getName).collect(Collectors.joining(", "));
   }
 
   @Override

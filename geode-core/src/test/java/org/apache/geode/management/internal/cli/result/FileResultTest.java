@@ -13,51 +13,44 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.result;
 
-import static org.mockito.Mockito.spy;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.File;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.test.junit.rules.GfshParserRule;
+
 
 @Category(UnitTest.class)
-public class DeployCommandTest {
+public class FileResultTest {
 
-  @ClassRule
-  public static GfshParserRule gfsh = new GfshParserRule();
-
-  private DeployCommand command;
+  private FileResult fileResult;
 
   @Before
   public void before() {
-    command = spy(DeployCommand.class);
+    fileResult = new FileResult();
   }
 
   @Test
-  public void jarNotFound() {
-    gfsh.executeAndAssertThat(command, "deploy --jar=abc.jar").statusIsError()
-        .containsOutput("not found");
+  public void getFormattedFileList() {
+    fileResult.addFile(new File("file1.txt"));
+    fileResult.addFile(new File("file2.txt"));
+    assertThat(fileResult.getFormattedFileList()).isEqualTo("file1.txt, file2.txt");
   }
 
   @Test
-  public void notDirectory() {
-    gfsh.executeAndAssertThat(command, "deploy --dir=notExist").statusIsError()
-        .containsOutput("not a directory");
-  }
+  public void getFiles() {
+    assertThat(fileResult.getFiles()).isEmpty();
 
-  @Test
-  public void bothDirAndJar() {
-    gfsh.executeAndAssertThat(command, "deploy --dir=a --jar=b").statusIsError()
-        .containsOutput("can not both be specified");
-  }
-
-  @Test
-  public void missingDirOrJar() {
-    gfsh.executeAndAssertThat(command, "deploy").statusIsError().containsOutput("is required");
+    File file1 = new File("file1.txt");
+    File file2 = new File("file2.txt");
+    fileResult.addFile(file1);
+    fileResult.addFile(file2);
+    assertThat(fileResult.getFiles()).containsExactlyInAnyOrder(file1, file2);
   }
 }

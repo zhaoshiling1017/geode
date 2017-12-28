@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -129,6 +130,14 @@ public class OnlineCommandProcessor {
           .createUserErrorResult(command + " can not be executed only from server side");
     }
 
-    return (Result) commandExecutor.execute(parseResult);
+    try {
+      return (Result) commandExecutor.execute(parseResult);
+    } finally {
+      // if the command required any uploaded staged files, need to clean them up afterwards
+      if (fileNames != null) {
+        fileNames.stream().map(File::new).filter(File::exists).filter(File::isFile)
+            .forEach(File::delete);
+      }
+    }
   }
 }

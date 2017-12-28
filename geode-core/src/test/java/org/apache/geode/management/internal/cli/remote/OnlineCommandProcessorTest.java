@@ -21,11 +21,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.Result;
@@ -41,6 +47,9 @@ public class OnlineCommandProcessorTest {
   CommandExecutor executor;
   OnlineCommandProcessor onlineCommandProcessor;
   Result result;
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
   public void before() {
@@ -89,5 +98,20 @@ public class OnlineCommandProcessorTest {
     Result commandResult = onlineCommandProcessor.executeCommand("foo --bar");
     assertThat(commandResult).isInstanceOf(CommandResult.class);
     assertThat(commandResult.toString()).contains("Could not parse command string. foo --bar");
+  }
+
+  @Test
+  public void fileIsCleanedUpAfterExecuteCommand() throws Exception {
+    File file1 = temporaryFolder.newFile("file1.txt");
+    File file2 = temporaryFolder.newFile("file2.txt");
+    assertThat(file1).exists();
+    assertThat(file2).exists();
+
+    List<String> filePaths = Arrays.asList(file1, file2).stream().map(File::getAbsolutePath)
+        .collect(Collectors.toList());
+    onlineCommandProcessor.executeCommand("list members", null, filePaths);
+
+    assertThat(file1).doesNotExist();
+    assertThat(file2).doesNotExist();
   }
 }

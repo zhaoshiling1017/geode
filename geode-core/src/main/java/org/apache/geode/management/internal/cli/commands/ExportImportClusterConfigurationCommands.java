@@ -25,11 +25,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
+import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -126,8 +130,10 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
       isFileUploaded = true, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   @SuppressWarnings("unchecked")
-  public Result importSharedConfig(@CliOption(key = {CliStrings.IMPORT_SHARED_CONFIG__ZIP},
-      mandatory = true, help = CliStrings.IMPORT_SHARED_CONFIG__ZIP__HELP) String zip) {
+  public Result importSharedConfig(
+      @CliOption(key = {CliStrings.IMPORT_SHARED_CONFIG__ZIP}, mandatory = true,
+          help = CliStrings.IMPORT_SHARED_CONFIG__ZIP__HELP) String zip)
+      throws IOException, TransformerException, SAXException, ParserConfigurationException {
 
     InternalLocator locator = InternalLocator.getLocator();
 
@@ -154,34 +160,21 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
 
     Result result;
     InfoResultData infoData = ResultBuilder.createInfoResultData();
-    File zipFile = new File(filePathFromShell.get(0));
-    try {
-      ClusterConfigurationService sc = locator.getSharedConfiguration();
+    String zipFilePath = filePathFromShell.get(0);
 
-      // backup the old config
-      for (Configuration config : sc.getConfigurationRegion().values()) {
-        sc.writeConfigToFile(config);
-      }
-      sc.renameExistingSharedConfigDirectory();
+    ClusterConfigurationService sc = locator.getSharedConfiguration();
 
-      ZipUtils.unzip(zipFile.getAbsolutePath(), sc.getSharedConfigurationDirPath());
-
-      // load it from the disk
-      sc.loadSharedConfigurationFromDisk();
-      infoData.addLine(CliStrings.IMPORT_SHARED_CONFIG__SUCCESS__MSG);
-
-    } catch (Exception e) {
-      ErrorResultData errorData = ResultBuilder.createErrorResultData();
-      errorData.addLine("Import failed");
-      if (Gfsh.getCurrentInstance() != null) {
-        Gfsh.getCurrentInstance().logSevere(e.getMessage(), e);
-      }
-      result = ResultBuilder.buildResult(errorData);
-      // if import is unsuccessful, don't need to bounce the server.
-      return result;
-    } finally {
-      FileUtils.deleteQuietly(zipFile);
+    // backup the old config
+    for (Configuration config : sc.getConfigurationRegion().values()) {
+      sc.writeConfigToFile(config);
     }
+    sc.renameExistingSharedConfigDirectory();
+
+    ZipUtils.unzip(zipFilePath, sc.getSharedConfigurationDirPath());
+
+    // load it from the disk
+    sc.loadSharedConfigurationFromDisk();
+    infoData.addLine(CliStrings.IMPORT_SHARED_CONFIG__SUCCESS__MSG);
 
     // Bounce the cache of each member
     Set<CliFunctionResult> functionResults =
