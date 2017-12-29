@@ -33,7 +33,6 @@ import java.util.Set;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -76,18 +75,11 @@ public class DeployFunction implements Function, InternalEntity {
       }
 
       Map<String, File> stagedFiles;
-      try {
-        stagedFiles = stageJarContent(jarFilenames, jarStreams);
-        stagingDir = stagedFiles.values().stream().findFirst().get().getParentFile();
-      } catch (IOException ex) {
-        CliFunctionResult result =
-            new CliFunctionResult(memberId, ex, "error staging jars for deployment");
-        context.getResultSender().lastResult(result);
-        deleteStagingDir(stagingDir);
-        return;
-      }
 
-      List<String> deployedList = new ArrayList<String>();
+      stagedFiles = stageJarContent(jarFilenames, jarStreams);
+      stagingDir = stagedFiles.values().stream().findFirst().get().getParentFile();
+
+      List<String> deployedList = new ArrayList<>();
       List<DeployedJar> jarClassLoaders =
           ClassPathLoader.getLatest().getJarDeployer().deploy(stagedFiles);
       for (int i = 0; i < jarFilenames.size(); i++) {
@@ -103,6 +95,10 @@ public class DeployFunction implements Function, InternalEntity {
           new CliFunctionResult(memberId, deployedList.toArray(new String[0]));
       context.getResultSender().lastResult(result);
 
+    } catch (IOException ex) {
+      CliFunctionResult result =
+          new CliFunctionResult(memberId, ex, "error staging jars for deployment");
+      context.getResultSender().lastResult(result);
     } catch (CacheClosedException cce) {
       CliFunctionResult result = new CliFunctionResult(memberId, false, null);
       context.getResultSender().lastResult(result);

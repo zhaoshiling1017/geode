@@ -130,14 +130,7 @@ public class OnlineCommandProcessor {
           .createUserErrorResult(command + " can not be executed only from server side");
     }
 
-    try {
-      return (Result) commandExecutor.execute(parseResult);
-    } finally {
-      // if the command required any uploaded staged files, need to clean them up afterwards
-      if (fileNames != null) {
-        fileNames.stream().map(File::new).filter(File::exists).filter(File::isFile)
-            .forEach(File::delete);
-      }
-    }
+    return (Result) commandExecutor.execute(parseResult);
+
   }
 }

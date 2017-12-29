@@ -139,14 +139,6 @@ public class DeployCommand implements GfshCommand {
     persistClusterConfiguration(result,
         () -> getSharedConfiguration().addJarsToThisLocator(jarFullPaths, groups));
 
-    // Clean up the staged jars
-    File stagingDir = new File(FilenameUtils.getFullPath(jarFullPaths.get(0)));
-    try {
-      FileUtils.deleteDirectory(stagingDir);
-    } catch (IOException e) {
-      logger.error("Unable to delete staging directory: {}", e.getMessage());
-    }
-
     return result;
   }
 

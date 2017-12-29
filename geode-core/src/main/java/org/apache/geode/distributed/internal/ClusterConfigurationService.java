@@ -21,7 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;

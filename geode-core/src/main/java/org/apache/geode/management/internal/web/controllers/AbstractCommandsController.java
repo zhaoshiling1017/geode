@@ -20,7 +20,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
@@ -36,6 +35,7 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.http.HttpStatus;
@@ -244,13 +244,13 @@ public abstract class AbstractCommandsController {
   protected String processCommand(final String command, final Map<String, String> environment,
       final MultipartFile[] multipartFiles) throws IOException {
     List<String> filePaths = null;
+    Path tempDir = null;
     if (multipartFiles != null) {
       Set<PosixFilePermission> perms = new HashSet<>();
       perms.add(PosixFilePermission.OWNER_READ);
       perms.add(PosixFilePermission.OWNER_WRITE);
       perms.add(PosixFilePermission.OWNER_EXECUTE);
-      Path tempDir =
-          Files.createTempDirectory("uploaded-", PosixFilePermissions.asFileAttribute(perms));
+      tempDir = Files.createTempDirectory("uploaded-", PosixFilePermissions.asFileAttribute(perms));
       // staging the files to local
       filePaths = new ArrayList<>();
       for (MultipartFile multipartFile : multipartFiles) {
@@ -261,6 +261,12 @@ public abstract class AbstractCommandsController {
     }
 
     MemberMXBean manager = getManagingMemberMXBean();
-    return manager.processCommand(command, environment, filePaths);
+    try {
+      return manager.processCommand(command, environment, filePaths);
+    } finally {
+      if (tempDir != null) {
+        FileUtils.deleteDirectory(tempDir.toFile());
+      }
+    }
   }
 }

@@ -17,6 +17,8 @@ package org.apache.geode.management.internal.cli.shell;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -274,8 +276,14 @@ public class JmxOperationInvoker implements OperationInvoker {
       throw new JMXInvocationException("Unable to upload file", e);
     }
 
-    return memberMXBeanProxy.processCommand(commandRequest.getUserInput(),
-        commandRequest.getEnvironment(), stagedFilePaths);
+    try {
+      return memberMXBeanProxy.processCommand(commandRequest.getUserInput(),
+          commandRequest.getEnvironment(), stagedFilePaths);
+    } finally {
+      if (stagedFilePaths != null) {
+        fileUploadMBeanProxy.deleteFiles(stagedFilePaths);
+      }
+    }
   }
 
   @Override

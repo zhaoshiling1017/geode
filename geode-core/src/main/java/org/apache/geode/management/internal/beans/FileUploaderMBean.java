@@ -24,9 +24,11 @@ import com.healthmarketscience.rmiio.RemoteInputStream;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
+    operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
 public interface FileUploaderMBean {
 
-  @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
-      operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
   List<String> uploadFile(Map<String, RemoteInputStream> remoteFiles) throws IOException;
+
+  void deleteFiles(List<String> files);
 }

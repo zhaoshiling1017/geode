@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
@@ -31,9 +32,16 @@ import java.util.Set;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.security.GemFireSecurityException;
 
 public class FileUploader implements FileUploaderMBean {
+  private static Logger logger = LogService.getLogger();
+
   @Override
   public List<String> uploadFile(Map<String, RemoteInputStream> remoteFiles) throws IOException {
     List<String> stagedFiles = new ArrayList<>();
@@ -59,5 +67,23 @@ public class FileUploader implements FileUploaderMBean {
     }
 
     return stagedFiles;
+  }
+
+  @Override
+  public void deleteFiles(List<String> files) {
+    if (files == null || files.isEmpty()) {
+      return;
+    }
+
+    Path parent = Paths.get(files.get(0)).getParent();
+    if (!parent.getFileName().startsWith("uploaded-")) {
+      throw new GemFireSecurityException(
+          String.format("Cannot delete %s, not in the uploaded directory.", files.get(0)));
+    }
+    try {
+      FileUtils.deleteDirectory(parent.toFile());
+    } catch (IOException e) {
+      logger.error(e.getMessage(), e);
+    }
   }
 }
