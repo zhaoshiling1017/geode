@@ -1565,18 +1565,18 @@ public class MemberMBeanBridge {
    *
    * @param commandString command string to be processed
    * @param env environment information to be used for processing the command
-   * @param fileNames list of local files to be deployed
+   * @param stagedFilePaths list of local files to be deployed
    * @return result of the processing the given command string.
    */
   public String processCommand(String commandString, Map<String, String> env,
-      List<String> fileNames) {
+      List<String> stagedFilePaths) {
     if (commandProcessor == null) {
       throw new JMRuntimeException(
           "Command can not be processed as Command Service did not get initialized. Reason: "
               + commandServiceInitError);
     }
 
-    Result result = commandProcessor.executeCommand(commandString, env, fileNames);
+    Result result = commandProcessor.executeCommand(commandString, env, stagedFilePaths);
     return CommandResponseBuilder.createCommandResponseJson(getMember(), (CommandResult) result);
   }
 

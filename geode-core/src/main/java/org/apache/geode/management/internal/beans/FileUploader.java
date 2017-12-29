@@ -40,6 +40,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class FileUploader implements FileUploaderMBean {
+  public static String STAGED_DIR_PREFIX = "uploaded-";
   private static Logger logger = LogService.getLogger();
 
   @Override
@@ -51,7 +52,7 @@ public class FileUploader implements FileUploaderMBean {
     perms.add(PosixFilePermission.OWNER_WRITE);
     perms.add(PosixFilePermission.OWNER_EXECUTE);
     Path tempDir =
-        Files.createTempDirectory("uploaded-", PosixFilePermissions.asFileAttribute(perms));
+        Files.createTempDirectory(STAGED_DIR_PREFIX, PosixFilePermissions.asFileAttribute(perms));
 
     for (String filename : remoteFiles.keySet()) {
       File stagedFile = new File(tempDir.toString(), filename);
@@ -76,7 +77,7 @@ public class FileUploader implements FileUploaderMBean {
     }
 
     Path parent = Paths.get(files.get(0)).getParent();
-    if (!parent.getFileName().toString().startsWith("uploaded-")) {
+    if (!parent.getFileName().toString().startsWith(STAGED_DIR_PREFIX)) {
       throw new GemFireSecurityException(
           String.format("Cannot delete %s, not in the uploaded directory.", files.get(0)));
     }

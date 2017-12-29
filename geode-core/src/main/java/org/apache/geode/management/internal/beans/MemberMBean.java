@@ -403,8 +403,8 @@ public class MemberMBean extends NotificationBroadcasterSupport implements Membe
 
   @Override
   public String processCommand(String commandString, Map<String, String> env,
-      List<String> fileNames) {
-    return bridge.processCommand(commandString, env, fileNames);
+      List<String> stagedFilePaths) {
+    return bridge.processCommand(commandString, env, stagedFilePaths);
   }
 
   @Override

@@ -215,11 +215,12 @@ public interface MemberMXBean {
    *
    * @param commandString Command to be execute.
    * @param env Environmental properties to use during command execution.
-   * @param fileNames Local files (as relevant to the command). May be null.
+   * @param stagedFilePaths Local files (as relevant to the command). May be null.
    * @return Result of the execution in JSON format.
    */
   @ResourceOperation()
-  String processCommand(String commandString, Map<String, String> env, List<String> fileNames);
+  String processCommand(String commandString, Map<String, String> env,
+      List<String> stagedFilePaths);
 
   /**
    * Returns the name of all disk stores in use by this member.
