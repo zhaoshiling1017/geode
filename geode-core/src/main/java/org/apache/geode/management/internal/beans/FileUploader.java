@@ -76,7 +76,7 @@ public class FileUploader implements FileUploaderMBean {
     }
 
     Path parent = Paths.get(files.get(0)).getParent();
-    if (!parent.getFileName().startsWith("uploaded-")) {
+    if (!parent.getFileName().toString().startsWith("uploaded-")) {
       throw new GemFireSecurityException(
           String.format("Cannot delete %s, not in the uploaded directory.", files.get(0)));
     }
