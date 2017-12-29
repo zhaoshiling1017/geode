@@ -20,6 +20,8 @@ import static org.apache.commons.io.FileUtils.ONE_MB;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.rmi.RemoteException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -28,14 +30,17 @@ import java.util.Set;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -54,6 +59,7 @@ import org.apache.geode.security.ResourcePermission;
 
 public class DeployCommand implements GfshCommand {
   private final DeployFunction deployFunction = new DeployFunction();
+  private final Logger logger = LogService.getLogger();
 
   /**
    * Deploy one or more JAR files to members of a group or all members.
@@ -99,6 +105,14 @@ public class DeployCommand implements GfshCommand {
           executeFunction(this.deployFunction, new Object[] {jarNames, remoteStreams}, member);
 
       results.add(((List) resultCollector.getResult()).get(0));
+
+      for (RemoteInputStream ris : remoteStreams) {
+        try {
+          ris.close(true);
+        } catch (IOException ex) {
+          // Ignored
+        }
+      }
     }
 
     List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(results);
@@ -124,6 +138,15 @@ public class DeployCommand implements GfshCommand {
     Result result = ResultBuilder.buildResult(tabularData);
     persistClusterConfiguration(result,
         () -> getSharedConfiguration().addJarsToThisLocator(jarFullPaths, groups));
+
+    // Clean up the staged jars
+    File stagingDir = new File(FilenameUtils.getFullPath(jarFullPaths.get(0)));
+    try {
+      FileUtils.deleteDirectory(stagingDir);
+    } catch (IOException e) {
+      logger.error("Unable to delete staging directory: {}", e.getMessage());
+    }
+
     return result;
   }
 

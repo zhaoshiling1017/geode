@@ -32,6 +32,8 @@ import java.util.Set;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -57,6 +59,7 @@ public class DeployFunction implements Function, InternalEntity {
   public void execute(FunctionContext context) {
     // Declared here so that it's available when returning a Throwable
     String memberId = "";
+    File stagingDir = null;
 
     try {
       final Object[] args = (Object[]) context.getArguments();
@@ -75,10 +78,12 @@ public class DeployFunction implements Function, InternalEntity {
       Map<String, File> stagedFiles;
       try {
         stagedFiles = stageJarContent(jarFilenames, jarStreams);
+        stagingDir = stagedFiles.values().stream().findFirst().get().getParentFile();
       } catch (IOException ex) {
         CliFunctionResult result =
             new CliFunctionResult(memberId, ex, "error staging jars for deployment");
         context.getResultSender().lastResult(result);
+        deleteStagingDir(stagingDir);
         return;
       }
 
@@ -112,6 +117,8 @@ public class DeployFunction implements Function, InternalEntity {
 
       CliFunctionResult result = new CliFunctionResult(memberId, th, null);
       context.getResultSender().lastResult(result);
+    } finally {
+      deleteStagingDir(stagingDir);
     }
   }
 
@@ -133,6 +140,18 @@ public class DeployFunction implements Function, InternalEntity {
   @Override
   public boolean isHA() {
     return false;
+  }
+
+  private void deleteStagingDir(File stagingDir) {
+    if (stagingDir == null) {
+      return;
+    }
+
+    try {
+      FileUtils.deleteDirectory(stagingDir);
+    } catch (IOException iox) {
+      logger.error("Unable to delete staging directory: {}", iox.getMessage());
+    }
   }
 
   private Map<String, File> stageJarContent(List<String> jarNames,
