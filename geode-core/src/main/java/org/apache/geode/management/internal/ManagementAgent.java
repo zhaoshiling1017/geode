@@ -491,8 +491,8 @@ public class ManagementAgent {
         ReadOpFileAccessController controller = new ReadOpFileAccessController(accessFile);
         controller.setMBeanServer(mbs);
       }
-      registerFileUploaderMBean();
     }
+    registerFileUploaderMBean();
 
     jmxConnectorServer.start();
     if (logger.isDebugEnabled()) {
