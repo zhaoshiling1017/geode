@@ -149,7 +149,8 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
    *
    * @return A new proxy MXBean of the same type with which the class was constructed
    */
-  public <T> T getProxyMXBean(Class<T> proxyClass) throws MalformedObjectNameException, IOException {
+  public <T> T getProxyMXBean(Class<T> proxyClass)
+      throws MalformedObjectNameException, IOException {
     return getProxyMXBean(proxyClass, null);
   }
 

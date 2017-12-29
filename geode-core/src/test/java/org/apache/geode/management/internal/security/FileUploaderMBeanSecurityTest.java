@@ -56,14 +56,12 @@ public class FileUploaderMBeanSecurityTest {
   @Test
   @ConnectionConfiguration(user = "clusterManageDeploy", password = "clusterManageDeploy")
   public void testClusterManageDeployAccess() throws Exception {
-    assertThatThrownBy(() -> bean.uploadFile(null))
-        .isNotInstanceOf(NotAuthorizedException.class);
+    assertThatThrownBy(() -> bean.uploadFile(null)).isNotInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
   @ConnectionConfiguration(user = "clusterManage", password = "clusterManage")
   public void testClusterManageAccess() throws Exception {
-    assertThatThrownBy(() -> bean.uploadFile(null))
-        .isNotInstanceOf(NotAuthorizedException.class);
+    assertThatThrownBy(() -> bean.uploadFile(null)).isNotInstanceOf(NotAuthorizedException.class);
   }
 }
