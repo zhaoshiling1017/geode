@@ -17,232 +17,262 @@
 
 
 apply plugin: 'antlr'
+apply plugin: 'kotlin'
 
 sourceSets {
-  jca {
-    compileClasspath += configurations.compile
-    runtimeClasspath += configurations.runtime
-  }
-  jpfTest {
-    compileClasspath += configurations.compile
-    compileClasspath += main.output
-    runtimeClasspath += configurations.runtime
-    runtimeClasspath += main.output
-  }
+    jca {
+        compileClasspath += configurations.compile
+        runtimeClasspath += configurations.runtime
+    }
+    jpfTest {
+        compileClasspath += configurations.compile
+        compileClasspath += main.output
+        runtimeClasspath += configurations.runtime
+        runtimeClasspath += main.output
+    }
 }
 
 
 
 configurations {
-  //declaring new configuration that will be used to associate with artifacts
-  archives
+    //declaring new configuration that will be used to associate with artifacts
+    archives
 }
 
 dependencies {
-  // Source Dependencies
-  antlr 'antlr:antlr:' + project.'antlr.version'
+    // Source Dependencies
+    antlr 'antlr:antlr:' + project.'antlr.version'
 
-  // External
-  provided files("${System.getProperty('java.home')}/../lib/tools.jar")
-  compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
-  compile 'org.jgroups:jgroups:' + project.'jgroups.version'
-  compile 'antlr:antlr:' + project.'antlr.version'
-  compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
-  compile 'commons-io:commons-io:' + project.'commons-io.version'
-  compile 'commons-validator:commons-validator:' + project.'commons-validator.version'
-  compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
+    // External
+    provided files("${System.getProperty('java.home')}/../lib/tools.jar")
 
-  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile ('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
-    exclude module: 'commons-digester'
-    exclude module: 'commons-logging-api'
-    exclude module: 'mx4j-jmx'
-    exclude module: 'xml-apis'
-    ext.optional = true
-  }
-  compile ('io.netty:netty-all:' + project.'netty-all.version') {
-    ext.optional = true
-  }
-  compile 'it.unimi.dsi:fastutil:' + project.'fastutil.version'
-  compile ('javax.mail:javax.mail-api:' + project.'javax.mail-api.version') {
-    ext.optional = true;
-  }
-  compile 'javax.resource:javax.resource-api:' + project.'javax.resource-api.version'
-  compile ('mx4j:mx4j:' + project.'mx4j.version') {
-    ext.optional = true;
-  }
-  compile ('mx4j:mx4j-remote:' + project.'mx4j.version') {
-    ext.optional = true;
-  }
-  compile ('mx4j:mx4j-tools:' + project.'mx4j.version') {
-    ext.optional = true;
-  }
-  compile ('net.java.dev.jna:jna:' + project.'jna.version')
+    compile group: 'io.micrometer', name: 'micrometer-core', version: '1.0.0-rc.5'
+    compile group: 'io.micrometer', name: 'micrometer-registry-atlas', version: '1.0.0-rc.5'
+    compile group: 'io.micrometer', name: 'micrometer-registry-influx', version: '1.0.0-rc.5'
+    compile group: 'io.micrometer', name: 'micrometer-registry-jmx', version: '1.0.0-rc.5'
 
-  compile ('net.sf.jopt-simple:jopt-simple:' + project.'jopt-simple.version')
+    compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
+    compile 'org.jgroups:jgroups:' + project.'jgroups.version'
+    compile 'antlr:antlr:' + project.'antlr.version'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
+    compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
+    compile 'commons-io:commons-io:' + project.'commons-io.version'
+    compile 'commons-validator:commons-validator:' + project.'commons-validator.version'
+    compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
 
-  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
-  runtime ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
-    ext.optional = true
-  }
-  runtime ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
-    ext.optional = true
-  }
-  runtime ('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
-    ext.optional = true
-  }
-  runtime ('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
-    ext.optional = true
-  }
-  compile ('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
-    ext.optional = true
-  }
-  provided ('org.springframework:spring-webmvc:' + project.'springframework.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-aop'
-    ext.optional = true
-  }
-  compile ('org.springframework:spring-core:' + project.'springframework.version') {
-    ext.optional = true
-  }
-  compile ('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'asm'
-    exclude module: 'cglib'
-    exclude module: 'guava'
-    exclude module: 'spring-aop'
-    exclude module: 'spring-context-support'
-    ext.optional = true
-  }
-  compile ('org.iq80.snappy:snappy:' + project.'snappy-java.version') {
-    ext.optional = true
-  }
+    compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+    compile('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
+        exclude module: 'commons-digester'
+        exclude module: 'commons-logging-api'
+        exclude module: 'mx4j-jmx'
+        exclude module: 'xml-apis'
+        ext.optional = true
+    }
+    compile('io.netty:netty-all:' + project.'netty-all.version') {
+        ext.optional = true
+    }
+    compile 'it.unimi.dsi:fastutil:' + project.'fastutil.version'
+    compile('javax.mail:javax.mail-api:' + project.'javax.mail-api.version') {
+        ext.optional = true;
+    }
+    compile 'javax.resource:javax.resource-api:' + project.'javax.resource-api.version'
+    compile('mx4j:mx4j:' + project.'mx4j.version') {
+        ext.optional = true;
+    }
+    compile('mx4j:mx4j-remote:' + project.'mx4j.version') {
+        ext.optional = true;
+    }
+    compile('mx4j:mx4j-tools:' + project.'mx4j.version') {
+        ext.optional = true;
+    }
+    compile('net.java.dev.jna:jna:' + project.'jna.version')
 
-  compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
-  // This is only added since shiro is using an old version of beanutils and we want
-  // to use a standard version. Once shiro deps are updated, remove this explicit dependency
-  // in favor of a transitive dependency on beanutils.
-  compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
+    compile('net.sf.jopt-simple:jopt-simple:' + project.'jopt-simple.version')
 
-  // https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner
-  compile 'io.github.lukehutch:fast-classpath-scanner:' + project.'fast-classpath-scanner.version'
+    compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
+    compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+    runtime('org.fusesource.jansi:jansi:' + project.'jansi.version') {
+        ext.optional = true
+    }
+    runtime('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
+        ext.optional = true
+    }
+    runtime('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
+        ext.optional = true
+    }
+    runtime('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
+        ext.optional = true
+    }
+    compile('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
+        ext.optional = true
+    }
+    provided('org.springframework:spring-webmvc:' + project.'springframework.version') {
+        exclude module: 'aopalliance'
+        exclude module: 'spring-aop'
+        ext.optional = true
+    }
+    compile('org.springframework:spring-core:' + project.'springframework.version') {
+        ext.optional = true
+    }
+    compile('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
+        exclude module: 'aopalliance'
+        exclude module: 'asm'
+        exclude module: 'cglib'
+        exclude module: 'guava'
+        exclude module: 'spring-aop'
+        exclude module: 'spring-context-support'
+        ext.optional = true
+    }
+    compile('org.iq80.snappy:snappy:' + project.'snappy-java.version') {
+        ext.optional = true
+    }
 
+    compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
+    // This is only added since shiro is using an old version of beanutils and we want
+    // to use a standard version. Once shiro deps are updated, remove this explicit dependency
+    // in favor of a transitive dependency on beanutils.
+    compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
 
-  compile project(':geode-common')
-  compile project(':geode-json')
-
-  jcaCompile sourceSets.main.output
-
-  testCompile project(':geode-junit')
-  testCompile project(':geode-old-versions')
-
-  // Test Dependencies
-  // External
-  testCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
-  testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
-  testRuntime 'org.apache.derby:derby:' + project.'derby.version'
-  testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
-  testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
-  testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'
-  testRuntime 'commons-io:commons-io:' + project.'commons-io.version'
-  testRuntime 'commons-validator:commons-validator:' + project.'commons-validator.version'
-  testCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
-  testCompile 'redis.clients:jedis:' + project.'jedis.version'
-  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
+    // https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner
+    compile 'io.github.lukehutch:fast-classpath-scanner:' + project.'fast-classpath-scanner.version'
 
 
-  testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
-  testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
-  testCompile 'com.pholser:junit-quickcheck-guava:' + project.'junit-quickcheck.version'
+    compile project(':geode-common')
+    compile project(':geode-json')
 
-  testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
-  jpfTestCompile project(':geode-concurrency-test')
+    jcaCompile sourceSets.main.output
+
+    testCompile project(':geode-junit')
+    testCompile project(':geode-old-versions')
+
+    // Test Dependencies
+    // External
+    testCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
+    testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
+    testRuntime 'org.apache.derby:derby:' + project.'derby.version'
+    testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
+    testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
+    testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'
+    testRuntime 'commons-io:commons-io:' + project.'commons-io.version'
+    testRuntime 'commons-validator:commons-validator:' + project.'commons-validator.version'
+    testCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
+    testCompile 'redis.clients:jedis:' + project.'jedis.version'
+    testCompile 'org.springframework:spring-test:' + project.'springframework.version'
+
+
+    testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
+    testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
+    testCompile 'com.pholser:junit-quickcheck-guava:' + project.'junit-quickcheck.version'
+
+    testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
+    jpfTestCompile project(':geode-concurrency-test')
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
 
 sourceSets {
-  main {
-    output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
-  }
-  test {
-    output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
-  }
+    main {
+        output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
+    }
+    test {
+        output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
+    }
 }
 
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile {
-  def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties");
-  outputs.file propertiesFile
-  inputs.dir compileJava.destinationDir
+    def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties");
+    outputs.file propertiesFile
+    inputs.dir compileJava.destinationDir
 
-  doLast {
-    def props = [
-      "Product-Name"      : productName,
-      "Product-Version"   : version,
-      "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
-      "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
-      "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
-      "Build-Java-Version": System.properties['java.version']
-    ] as Properties
-    props.putAll(readScmInfo())
+    doLast {
+        def props = [
+                "Product-Name"      : productName,
+                "Product-Version"   : version,
+                "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
+                "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
+                "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
+                "Build-Java-Version": System.properties['java.version']
+        ] as Properties
+        props.putAll(readScmInfo())
 
-    propertiesFile.getParentFile().mkdirs();
-    new FileOutputStream(propertiesFile).withStream { fos ->
-      props.store(fos, '')
+        propertiesFile.getParentFile().mkdirs();
+        new FileOutputStream(propertiesFile).withStream { fos ->
+            props.store(fos, '')
+        }
     }
-  }
 }
 
 jar {
 
-  from sourceSets.main.output
-  from sourceSets.jca.output
+    from sourceSets.main.output
+    from sourceSets.jca.output
 
-  exclude 'org/apache/geode/management/internal/web/**'
-  exclude 'org/apache/geode/internal/i18n/StringIdResourceBundle_ja.txt'
-  exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'
+    exclude 'org/apache/geode/management/internal/web/**'
+    exclude 'org/apache/geode/internal/i18n/StringIdResourceBundle_ja.txt'
+    exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'
 }
 
-task webJar (type: Jar, dependsOn: classes) {
-  description 'Assembles the jar archive containing the gemfire management web classes.'
-  from sourceSets.main.output
-  baseName 'geode-web'
-  include 'org/apache/geode/management/internal/web/**'
+task webJar(type: Jar, dependsOn: classes) {
+    description 'Assembles the jar archive containing the gemfire management web classes.'
+    from sourceSets.main.output
+    baseName 'geode-web'
+    include 'org/apache/geode/management/internal/web/**'
 }
 
-task raJar (type: Jar, dependsOn: classes) {
-  description 'Assembles the jar archive that contains the JCA classes'
-  from sourceSets.jca.output
-  exclude 'org/apache/geode/ra/**'
-  archiveName 'ra.jar'
+task raJar(type: Jar, dependsOn: classes) {
+    description 'Assembles the jar archive that contains the JCA classes'
+    from sourceSets.jca.output
+    exclude 'org/apache/geode/ra/**'
+    archiveName 'ra.jar'
 }
 
-task jcaJar (type: Jar, dependsOn: raJar) {
-  description 'Assembles the jar archive that contains the JCA bundle'
-  baseName 'geode-jca'
-  extension 'rar'
-  metaInf { from 'src/jca/ra.xml' }
-  from raJar.archivePath
+task jcaJar(type: Jar, dependsOn: raJar) {
+    description 'Assembles the jar archive that contains the JCA bundle'
+    baseName 'geode-jca'
+    extension 'rar'
+    metaInf { from 'src/jca/ra.xml' }
+    from raJar.archivePath
 }
 
 task jpfTest(type: Test) {
-  classpath = sourceSets.jpfTest.runtimeClasspath
-  testClassesDir = sourceSets.jpfTest.output.classesDir
+    classpath = sourceSets.jpfTest.runtimeClasspath
+    testClassesDir = sourceSets.jpfTest.output.classesDir
 }
 
 configurations {
-  classesOutput {
-    extendsFrom compile
-    description  'a dependency that exposes the compiled classes'
-  }
+    classesOutput {
+        extendsFrom compile
+        description 'a dependency that exposes the compiled classes'
+    }
 }
 
 dependencies {
-  classesOutput sourceSets.main.output
+    classesOutput sourceSets.main.output
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)
+buildscript {
+    ext.kotlin_version = '1.2.10'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+repositories {
+    mavenCentral()
+}
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
 

@@ -32,6 +32,7 @@ dependencies {
     compile group: 'io.micrometer', name: 'micrometer-registry-atlas', version: '1.0.0-rc.5'
     compile group: 'io.micrometer', name: 'micrometer-registry-influx', version: '1.0.0-rc.5'
     compile group: 'io.micrometer', name: 'micrometer-registry-graphite', version: '1.0.0-rc.5'
+    compile group: 'io.micrometer', name: 'micrometer-registry-jmx', version: '1.0.0-rc.5'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 buildscript {

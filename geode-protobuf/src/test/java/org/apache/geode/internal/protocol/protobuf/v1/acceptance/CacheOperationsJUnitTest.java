@@ -152,7 +152,7 @@ public class CacheOperationsJUnitTest {
     private static String randomLengthString() {
         Random random = new Random();
         StringBuffer stringBuffer = new StringBuffer();
-        int length = (int) (random.nextInt(1024000)*(1.75*random.nextInt(10)));
+        int length = (int) (random.nextInt(1024000) * (1.75 * random.nextInt(10)));
         for (int i = 0; i < (length); i++) {
             stringBuffer.append("a");
         }
@@ -170,8 +170,10 @@ public class CacheOperationsJUnitTest {
                     randomLengthString()));
             putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY2,
                     randomLengthString()));
-            putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY3,
-                    randomLengthString()));
+            if (new Random().nextInt() % 2 == 0) {
+                putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY3,
+                        randomLengthString()));
+            }
             ClientProtocol.Message putAllMessage = ProtobufUtilities.createProtobufMessage(
                     ProtobufRequestUtilities.createPutAllRequest(TEST_REGION, putEntries));
             protobufProtocolSerializer.serialize(putAllMessage, outputStream);
@@ -179,8 +181,10 @@ public class CacheOperationsJUnitTest {
 
             Set<BasicTypes.EncodedValue> getEntries = new HashSet<>();
             getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY1));
-//            getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY2));
-//            getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY3));
+            if(new Random().nextInt() % 5 == 0) {
+            getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY2));
+            getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY3));
+            }
 
             RegionAPI.GetAllRequest getAllRequest =
                     ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, getEntries);

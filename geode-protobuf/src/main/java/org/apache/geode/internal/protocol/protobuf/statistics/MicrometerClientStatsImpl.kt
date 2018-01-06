@@ -1,10 +1,12 @@
 package org.apache.geode.internal.protocol.protobuf.statistics
 
 import io.micrometer.core.instrument.Clock
+import io.micrometer.core.instrument.DistributionSummary
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
 import io.micrometer.influx.InfluxConfig
 import io.micrometer.influx.InfluxMeterRegistry
+import io.micrometer.jmx.JmxMeterRegistry
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
@@ -14,7 +16,7 @@ class MicrometerClientStatsImpl : ProtocolClientStatistics {
     private val clientsConnected = AtomicInteger(0)
 
     private val influxMetrics: MeterRegistry = InfluxMeterRegistry(object : InfluxConfig {
-        override fun step(): Duration = Duration.ofSeconds(10)
+        override fun step(): Duration = Duration.ofSeconds(1)
         override fun db(): String = "mydb"
         override fun get(k: String): String? = null
         override fun uri(): String = "http://localhost:8086"
@@ -27,16 +29,19 @@ class MicrometerClientStatsImpl : ProtocolClientStatistics {
 //        override fun step(): Duration = Duration.ofSeconds(10)
 //    }, Clock.SYSTEM)
 
+    private val jmxMetrics: MeterRegistry = JmxMeterRegistry()
+
     private val metrics = CompositeMeterRegistry(Clock.SYSTEM)
 
     init {
         metrics.add(influxMetrics)
 //        metrics.add(atlasMetrics)
+        metrics.add(jmxMetrics)
     }
 
     val clientConnectedCounter = metrics.gauge("clientConnected", clientsConnected)
-    val messageReceivedCounter = metrics.counter("messageReceived")
-    val messageSentCounter = metrics.counter("messageSent")
+    val messageReceivedCounter = metrics.summary("messageReceived")
+    val messageSentCounter = metrics.summary("messageSent")
     val authorizationViolationsCounter = metrics.counter("authorizationViolations")
     val authenticationFailureCounter = metrics.counter("authenticationFailures")
 
@@ -49,11 +54,11 @@ class MicrometerClientStatsImpl : ProtocolClientStatistics {
     }
 
     override fun messageReceived(bytes: Int) {
-        messageReceivedCounter.increment(bytes.toDouble())
+        messageReceivedCounter.record(bytes.toDouble())
     }
 
     override fun messageSent(bytes: Int) {
-        messageSentCounter.increment(bytes.toDouble())
+        messageSentCounter.record(bytes.toDouble())
     }
 
     override fun incAuthorizationViolations() {
