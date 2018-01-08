@@ -15,9 +15,12 @@
 package org.apache.geode.cache;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
+@Category(DistributedTest.class)
 public class HangingDUnitTest extends JUnit4CacheTestCase {
 
   @Test
