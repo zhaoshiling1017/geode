@@ -8,20 +8,27 @@ import io.micrometer.influx.InfluxMeterRegistry
 import io.micrometer.jmx.JmxMeterRegistry
 import java.time.Duration
 
-abstract class MicrometerStats {
-    protected val metrics = CompositeMeterRegistry(Clock.SYSTEM)
+class MicrometerStats {
+    val meterRegistry = CompositeMeterRegistry(Clock.SYSTEM)
     private val influxMetrics: MeterRegistry = InfluxMeterRegistry(object : InfluxConfig {
-        override fun step(): Duration = Duration.ofSeconds(1)
+        override fun step(): Duration = Duration.ofSeconds(10)
         override fun db(): String = "mydb"
         override fun get(k: String): String? = null
         override fun uri(): String = "http://localhost:8086"
     }, Clock.SYSTEM)
 
+//    private val atlasMetrics: MeterRegistry = AtlasMeterRegistry(object : AtlasConfig {
+//        override fun get(k: String?): String? = null
+//        override fun enabled(): Boolean = true
+//        override fun uri(): String = "http://localhost:7101/api/v1/publish"
+//        override fun step(): Duration = Duration.ofSeconds(10)
+//    }, Clock.SYSTEM)
+
     private val jmxMetrics: MeterRegistry = JmxMeterRegistry()
 
     init {
-        metrics.add(influxMetrics)
-//        metrics.add(atlasMetrics)
-        metrics.add(jmxMetrics)
+        meterRegistry.add(influxMetrics)
+//        meterRegistry.add(atlasMetrics)
+        meterRegistry.add(jmxMetrics)
     }
 }

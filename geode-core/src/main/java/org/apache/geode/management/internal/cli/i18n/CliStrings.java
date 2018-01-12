@@ -2023,15 +2023,15 @@ public class CliStrings {
   public static final String SHOW_LOG_MSG_INVALID_NUMBER = "Invalid number";
   public static final String SHOW_LOG_ERROR = "Error";
 
-  /* show metrics */
-  public static final String SHOW_METRICS = "show metrics";
+  /* show meterRegistry */
+  public static final String SHOW_METRICS = "show meterRegistry";
   public static final String SHOW_METRICS__HELP =
-      "Display or export metrics for the entire distributed system, a member or a region.";
+      "Display or export meterRegistry for the entire distributed system, a member or a region.";
   public static final String SHOW_METRICS__REGION = "region";
   public static final String SHOW_METRICS__REGION__HELP =
-      "Name/Path of the region whose metrics will be displayed/exported.";
+      "Name/Path of the region whose meterRegistry will be displayed/exported.";
   public static final String SHOW_METRICS__MEMBER__HELP =
-      "Name/Id of the member whose metrics will be displayed/exported.";
+      "Name/Id of the member whose meterRegistry will be displayed/exported.";
   public static final String SHOW_METRICS__CATEGORY = "categories";
   public static final String SHOW_METRICS__CATEGORY__HELP =
       "Categories available based upon the parameters specified are:\n"
@@ -2042,14 +2042,14 @@ public class CliStrings {
           + "- member and region specified: callback, diskstore, eviction, partition, region";
   public static final String SHOW_METRICS__FILE = "file";
   public static final String SHOW_METRICS__FILE__HELP =
-      "Name of the file to which metrics will be written.";
-  public static final String SHOW_METRICS__ERROR = "Unable to retrieve metrics : {0} ";
+      "Name of the file to which meterRegistry will be written.";
+  public static final String SHOW_METRICS__ERROR = "Unable to retrieve meterRegistry : {0} ";
   public static final String SHOW_METRICS__TYPE__HEADER = "Category";
   public static final String SHOW_METRICS__METRIC__HEADER = "Metric";
   public static final String SHOW_METRICS__VALUE__HEADER = "Value";
   public static final String SHOW_METRICS__CACHESERVER__PORT = "port";
   public static final String SHOW_METRICS__CACHESERVER__PORT__HELP =
-      "Port number of the Cache Server whose metrics are to be displayed/exported. This can only be used along with the --member parameter.";
+      "Port number of the Cache Server whose meterRegistry are to be displayed/exported. This can only be used along with the --member parameter.";
   public static final String SHOW_METRICS__CANNOT__USE__CACHESERVERPORT =
       "If the --port parameter is specified, then the --member parameter must also be specified.";
   public static final String SHOW_METRICS__CANNOT__USE__REGION__WITH__CACHESERVERPORT =

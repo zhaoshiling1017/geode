@@ -55,8 +55,7 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
       if (parentRegion.getRegionAdvisor().getBucketAdvisor(i).getBucketRedundancy() != region
           .getRegionAdvisor().getBucketAdvisor(i).getBucketRedundancy()) {
         /* if (leaderRegion.getRegionAdvisor().isStorageAssignedForBucket(i)) { */
-        final long startTime = PartitionedRegionStats.startTime();
-        region.getRedundancyProvider().createBucketAtomically(i, 0, startTime, true, null);
+        region.getRedundancyProvider().createBucketAtomically(i, 0, true, null);
       }
     }
   }

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.internal.cache.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -30,10 +31,6 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.locks.DLockStats;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.internal.cache.DiskStoreStats;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.statistics.VMStatsContract;
 import org.apache.geode.internal.stats50.VMStats50;
@@ -94,7 +91,7 @@ public class MemberLevelStatsJUnitTest extends MBeanStatsTestCase {
     }
 
     for (int i = 0; i < 4; i++) {
-      PartitionedRegionStats stats = new PartitionedRegionStats(system, name.getMethodName() + i);
+      PartitionedRegionStats stats = new PartitionedRegionStatsImpl(system, name.getMethodName() + i);
       parRegionStatsList.add(stats);
       bridge.addPartionRegionStats(stats);
     }

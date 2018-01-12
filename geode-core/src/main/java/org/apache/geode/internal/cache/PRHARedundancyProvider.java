@@ -418,7 +418,7 @@ public class PRHARedundancyProvider {
   // public static final boolean ENFORCE_UNIQUE_HOST_STORAGE_ALLOCATION =
   // DistributionConfig.DEFAULT_ENFORCE_UNIQUE_HOST;
 
-  public InternalDistributedMember createBucketOnDataStore(int bucketId, int size, long startTime,
+  public InternalDistributedMember createBucketOnDataStore(int bucketId, int size,
       RetryTimeKeeper snoozer) {
     Set<InternalDistributedMember> attempted = new HashSet<InternalDistributedMember>();
     InternalDistributedMember ret;
@@ -495,7 +495,7 @@ public class PRHARedundancyProvider {
    *         region referred to in the query.
    */
   public InternalDistributedMember createBucketAtomically(final int bucketId,
-      final int newBucketSize, final long startTime, final boolean finishIncompleteCreation,
+      final int newBucketSize,  final boolean finishIncompleteCreation,
       String partitionName) throws PartitionedRegionStorageException, PartitionedRegionException,
       PartitionOfflineException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -1012,13 +1012,12 @@ public class PRHARedundancyProvider {
 
   public void finishIncompleteBucketCreation(int bucketId) {
     String partitionName = null;
-    final long startTime = PartitionedRegionStats.startTime();
     if (this.prRegion.isFixedPartitionedRegion()) {
       FixedPartitionAttributesImpl fpa =
           PartitionedRegionHelper.getFixedPartitionAttributesForBucket(this.prRegion, bucketId);
       partitionName = fpa.getPartitionName();
     }
-    createBucketAtomically(bucketId, 0, startTime, true, partitionName);
+    createBucketAtomically(bucketId, 0, true, partitionName);
   }
 
   /**

@@ -17,6 +17,7 @@ package org.apache.geode.management.bean.stats;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.geode.internal.cache.PartitionedRegionStatsImpl;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -49,7 +50,7 @@ public class RegionStatsJUnitTest extends MBeanStatsTestCase {
 
   protected void init() {
     cachePerfStats = new CachePerfStats(system);
-    partitionedRegionStats = new PartitionedRegionStats(system, "/tests");
+    partitionedRegionStats = new PartitionedRegionStatsImpl(system, "/tests");
     diskRegionStats = new DiskRegionStats(system, "test-disk");
 
     bridge = new RegionMBeanBridge(cachePerfStats);

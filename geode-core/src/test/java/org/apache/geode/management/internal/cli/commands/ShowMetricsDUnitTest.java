@@ -118,19 +118,19 @@ public class ShowMetricsDUnitTest {
 
   @Test
   public void testShowMetricsDefault() throws Exception {
-    gfsh.executeAndAssertThat("show metrics").statusIsSuccess();
+    gfsh.executeAndAssertThat("show meterRegistry").statusIsSuccess();
   }
 
   @Test
   public void testShowMetricsRegion() throws Exception {
-    gfsh.executeAndAssertThat("show metrics --region=REGION1").statusIsSuccess();
+    gfsh.executeAndAssertThat("show meterRegistry --region=REGION1").statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Cluster-wide Region Metrics");
   }
 
   @Test
   public void testShowMetricsMember() throws Exception {
     gfsh.executeAndAssertThat(
-        "show metrics --member=" + server.getName() + " --port=" + server.getPort())
+        "show meterRegistry --member=" + server.getName() + " --port=" + server.getPort())
         .statusIsSuccess().containsOutput("Member Metrics").containsOutput("cacheserver");
   }
 
@@ -139,17 +139,17 @@ public class ShowMetricsDUnitTest {
     File output = tempFolder.newFile("memberMetricReport.csv");
     output.delete();
 
-    gfsh.executeAndAssertThat("show metrics --member=" + server.getName() + " --port="
+    gfsh.executeAndAssertThat("show meterRegistry --member=" + server.getName() + " --port="
         + server.getPort() + " --file=" + output.getAbsolutePath()).statusIsSuccess()
         .containsOutput("Member Metrics").containsOutput("cacheserver")
-        .containsOutput("Member metrics exported to " + output.getAbsolutePath());
+        .containsOutput("Member meterRegistry exported to " + output.getAbsolutePath());
 
     assertThat(output).exists();
   }
 
   @Test
   public void testShowMetricsRegionFromMember() throws Exception {
-    gfsh.executeAndAssertThat("show metrics --member=" + server.getName() + " --region=REGION1")
+    gfsh.executeAndAssertThat("show meterRegistry --member=" + server.getName() + " --region=REGION1")
         .statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Metrics for region:/REGION1 On Member server-1");
   }

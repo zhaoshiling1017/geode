@@ -36,7 +36,7 @@ public class ShowMetricsJUnitTest {
   public void testPortAndRegion() throws Exception {
     ShowMetricsCommand command = spy(ShowMetricsCommand.class);
     CommandResult result =
-        parser.executeCommandWithInstance(command, "show metrics --port=0 --region=regionA");
+        parser.executeCommandWithInstance(command, "show meterRegistry --port=0 --region=regionA");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getContent().toString())
         .contains("The --region and --port parameters are mutually exclusive");
@@ -45,7 +45,7 @@ public class ShowMetricsJUnitTest {
   @Test
   public void testPortOnly() throws Exception {
     ShowMetricsCommand command = spy(ShowMetricsCommand.class);
-    CommandResult result = parser.executeCommandWithInstance(command, "show metrics --port=0");
+    CommandResult result = parser.executeCommandWithInstance(command, "show meterRegistry --port=0");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getContent().toString()).contains(
         "If the --port parameter is specified, then the --member parameter must also be specified.");
@@ -54,7 +54,7 @@ public class ShowMetricsJUnitTest {
   @Test
   public void invalidPortNumber() throws Exception {
     ShowMetricsCommand command = spy(ShowMetricsCommand.class);
-    CommandResult result = parser.executeCommandWithInstance(command, "show metrics --port=abc");
+    CommandResult result = parser.executeCommandWithInstance(command, "show meterRegistry --port=abc");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     // When relying on Spring's converters, any command that does not parse is "Invalid"
     assertThat(result.getContent().toString()).contains("Invalid command");

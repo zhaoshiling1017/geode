@@ -69,14 +69,14 @@ public class ShowMetricsCommandIntegrationTest {
   @Test
   public void commandFailsWhenNotConnected() throws Exception {
     gfsh.disconnect();
-    gfsh.executeAndAssertThat("show metrics")
+    gfsh.executeAndAssertThat("show meterRegistry")
         .containsOutput("was found but is not currently available");
   }
 
   @Test
   public void getRegionMetricsShowsExactlyDefaultCategories() throws Exception {
     // Use --region and --member to get RegionMetricsFromMember
-    String cmd = "show metrics --region=/" + REGION_NAME + " --member=" + MEMBER_NAME;
+    String cmd = "show meterRegistry --region=/" + REGION_NAME + " --member=" + MEMBER_NAME;
     List<String> expectedCategories =
         ShowMetricsInterceptor.getValidCategoriesAsStrings(true, true, false);
     // Blank lines are permitted for grouping.
@@ -89,7 +89,7 @@ public class ShowMetricsCommandIntegrationTest {
   @Test
   public void getSystemRegionMetricsShowsExactlyDefaultCategories() throws Exception {
     // Use --region alone to get SystemRegionMetrics
-    String cmd = "show metrics --region=/" + REGION_NAME;
+    String cmd = "show meterRegistry --region=/" + REGION_NAME;
     List<String> expectedCategories =
         ShowMetricsInterceptor.getValidCategoriesAsStrings(true, false, false);
     // Blank lines are permitted for grouping.
@@ -102,8 +102,8 @@ public class ShowMetricsCommandIntegrationTest {
 
   @Test
   public void getMemberMetricsShowsExactlyDefaultCategories() throws Exception {
-    // Use --member to get member metrics
-    String cmd = "show metrics --member=" + MEMBER_NAME;
+    // Use --member to get member meterRegistry
+    String cmd = "show meterRegistry --member=" + MEMBER_NAME;
     List<String> expectedCategories =
         ShowMetricsInterceptor.getValidCategoriesAsStrings(false, true, false);
     // Blank lines are permitted for grouping.
@@ -116,8 +116,8 @@ public class ShowMetricsCommandIntegrationTest {
 
   @Test
   public void getMemberWithPortMetricsShowsExactlyDefaultCategories() throws Exception {
-    // Use --member and --port to get member metrics with port info
-    String cmd = "show metrics --member=" + MEMBER_NAME + " --port=" + server.getPort();
+    // Use --member and --port to get member meterRegistry with port info
+    String cmd = "show meterRegistry --member=" + MEMBER_NAME + " --port=" + server.getPort();
     List<String> expectedCategories =
         ShowMetricsInterceptor.getValidCategoriesAsStrings(false, true, true);
     // Blank lines are permitted for grouping.
@@ -130,8 +130,8 @@ public class ShowMetricsCommandIntegrationTest {
 
   @Test
   public void getSystemMetricsShowsExactlyDefaultCategories() throws Exception {
-    // No specified options yield system-wide metrics
-    String cmd = "show metrics";
+    // No specified options yield system-wide meterRegistry
+    String cmd = "show meterRegistry";
     List<String> expectedCategories =
         ShowMetricsInterceptor.getValidCategoriesAsStrings(false, false, false);
     // Blank lines are permitted for grouping.
@@ -145,7 +145,7 @@ public class ShowMetricsCommandIntegrationTest {
   @Test
   public void invalidCategoryGetsReported() throws Exception {
     String cmd =
-        "show metrics --categories=\"cluster,cache,some_invalid_category,another_invalid_category\"";
+        "show meterRegistry --categories=\"cluster,cache,some_invalid_category,another_invalid_category\"";
 
     gfsh.executeAndAssertThat(cmd).containsOutput("Invalid Categories")
         .containsOutput("some_invalid_category").containsOutput("another_invalid_category")
@@ -154,7 +154,7 @@ public class ShowMetricsCommandIntegrationTest {
 
   @Test
   public void categoryOptionAbridgesOutput() throws Exception {
-    String cmd = "show metrics --categories=\"cluster,cache\"";
+    String cmd = "show meterRegistry --categories=\"cluster,cache\"";
     List<String> expectedCategories = Arrays.asList("cluster", "cache", "");
     logger.info("Expecting categories: " + String.join(", ", expectedCategories));
 
@@ -166,7 +166,7 @@ public class ShowMetricsCommandIntegrationTest {
   public void getRegionMetricsForPartitionedRegionWithStatistics() throws Exception {
     String cmd = "create region --name=region2 --type=PARTITION --enable-statistics";
     gfsh.executeAndAssertThat(cmd).statusIsSuccess();
-    String cmd2 = "show metrics --member=" + MEMBER_NAME + " --region=region2";
+    String cmd2 = "show meterRegistry --member=" + MEMBER_NAME + " --region=region2";
     gfsh.executeAndAssertThat(cmd2).statusIsSuccess().tableHasRowWithValues("Category", "Metric",
         "Value", "", "missCount", "-1");
   }

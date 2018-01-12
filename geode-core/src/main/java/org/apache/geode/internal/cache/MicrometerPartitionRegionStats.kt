@@ -1,15 +1,48 @@
 package org.apache.geode.internal.cache
 
+import com.netflix.spectator.impl.AtomicDouble
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.Gauge
+import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
+import org.apache.geode.Statistics
+import java.lang.Number
 import java.util.concurrent.atomic.AtomicInteger
 
-open class MicrometerPartitionRegionStats(val regionName: String) : MicrometerStats() {
+open class MicrometerPartitionRegionStats(val meterRegistry: MeterRegistry, val regionName: String) : PartitionedRegionStats {
+    override fun getStats(): Statistics? {
+        //we do nothing here... because we don't need to
+        return null;
+    }
 
     @Suppress("PropertyName")
     protected val PARTITIONED_REGION = "PartitionedRegion"
+    private val tags = listOf<Tag>(Tag.of("region", regionName), Tag.of("regionType", PARTITIONED_REGION))
 
+    private fun constructCounterForMetric(metricName: String): Counter {
+        return meterRegistry.counter("${metricName}", tags)
+    }
+
+    private fun <T> constructGaugeForMetric(metricName: String, atomic: T, function: (T) -> Double): Gauge = Gauge.builder(metricName, atomic, function).tags(tags).register(meterRegistry)
+
+
+    private fun incrementAtomic(atomic: AtomicInteger, value: Int) {
+        atomic.addAndGet(value)
+    }
+
+    private fun incrementAtomic(atomic: AtomicDouble, value: Double) {
+        atomic.addAndGet(value)
+    }
+
+    //Atomic values to track
+    private val bucketCountAtomic = AtomicInteger(0)
+    private val lowBucketCountAtomic = AtomicInteger(0)
+    private val numberCopiesBucketCountAtomic = AtomicInteger(0)
+    private val totalNumberOfBucketsAtomic = AtomicInteger(0)
+    private val primaryBucketCountAtomic = AtomicInteger(0)
+    private val numberVolunteeringThreadsAtomic = AtomicInteger(0)
+
+    //Micrometer Meters
     private val putCounter = constructCounterForMetric("put")
     private val putAllCounter = constructCounterForMetric("putAll")
     private val createCounter = constructCounterForMetric("create")
@@ -21,360 +54,243 @@ open class MicrometerPartitionRegionStats(val regionName: String) : MicrometerSt
     private val containValueForKeyCounter = constructCounterForMetric("containValueForKey")
     private val containsKeyValueRetriesCounter = constructCounterForMetric("containsKeyValueRetries")
     private val containsKeyValueOpsRetriedCounter = constructCounterForMetric("containsKeyValueOpsRetried")
-    private val incInvalidateRetriesCounter = constructCounterForMetric("incInvalidateRetries")
-    private val incInvalidateOpsRetriedCounter = constructCounterForMetric("incInvalidateOpsRetried")
-    private val incDestroyRetriesCounter = constructCounterForMetric("incDestroyRetries")
-    private val incDestroyOpsRetriedCounter = constructCounterForMetric("incDestroyOpsRetried")
-    private val incPutRetriesCounter = constructCounterForMetric("incPutRetries")
-    private val incPutOpsRetriedCounter = constructCounterForMetric("incPutOpsRetried")
-    private val incGetOpsRetriedCounter = constructCounterForMetric("incGetOpsRetried")
-    private val incGetRetriesCounter = constructCounterForMetric("incGetRetries")
-    private val incCreateOpsRetriedCounter = constructCounterForMetric("incCreateOpsRetried")
-    private val incCreateRetriesCounter = constructCounterForMetric("incCreateRetries")
-    private val incPreferredReadLocalCounter = constructCounterForMetric("incPreferredReadLocal")
-    private val incPreferredReadRemoteCounter = constructCounterForMetric("incPreferredReadRemote")
-    private val incPutAllRetriesCounter = constructCounterForMetric("incPutAllRetries")
-    private val incPutAllMsgsRetriedCounter = constructCounterForMetric("incPutAllMsgsRetried")
-    private val incRemoveAllRetriesCounter = constructCounterForMetric("incRemoveAllRetries")
-    private val incRemoveAllMsgsRetriedCounter = constructCounterForMetric("incRemoveAllMsgsRetried")
-    private val incPartitionMessagesSentCounter = constructCounterForMetric("incPartitionMessagesSent")
-    private val incBucketCountCounter = constructCounterForMetric("incBucketCount")
+    private val invalidateRetriesCounter = constructCounterForMetric("invalidateRetries")
+    private val invalidateOpsRetriedCounter = constructCounterForMetric("invalidateOpsRetried")
+    private val destroyRetriesCounter = constructCounterForMetric("destroyRetries")
+    private val destroyOpsRetriedCounter = constructCounterForMetric("destroyOpsRetried")
+    private val putRetriesCounter = constructCounterForMetric("putRetries")
+    private val putOpsRetriedCounter = constructCounterForMetric("putOpsRetried")
+    private val getOpsRetriedCounter = constructCounterForMetric("getOpsRetried")
+    private val getRetriesCounter = constructCounterForMetric("getRetries")
+    private val createOpsRetriedCounter = constructCounterForMetric("createOpsRetried")
+    private val createRetriesCounter = constructCounterForMetric("createRetries")
+    private val preferredReadLocalCounter = constructCounterForMetric("preferredReadLocal")
+    private val preferredReadRemoteCounter = constructCounterForMetric("preferredReadRemote")
+    private val putAllRetriesCounter = constructCounterForMetric("putAllRetries")
+    private val putAllMsgsRetriedCounter = constructCounterForMetric("putAllMsgsRetried")
+    private val removeAllRetriesCounter = constructCounterForMetric("removeAllRetries")
+    private val removeAllMsgsRetriedCounter = constructCounterForMetric("removeAllMsgsRetried")
+    private val partitionMessagesSentCounter = constructCounterForMetric("partitionMessagesSent")
+    private val prMetaDataSentCounter = constructCounterForMetric("prMetaDataSentCounter")
+    private val bucketCountGauge = constructGaugeForMetric("bucketCount", bucketCountAtomic, { it.get().toDouble() })
+    private val lowBucketCountGauge = constructGaugeForMetric("lowBucketCount", lowBucketCountAtomic, { it.get().toDouble() })
+    private val numberCopiesBucketCountGauge = constructGaugeForMetric("numberCopiesBucketCount", numberCopiesBucketCountAtomic, { it.get().toDouble() })
+    private val totalNumberOfBucketsGauge = constructGaugeForMetric("totalNumberOfBuckets", totalNumberOfBucketsAtomic, { it.get().toDouble() })
+    private val primaryBucketCountGauge = constructGaugeForMetric("primaryBucketCount", primaryBucketCountAtomic, { it.get().toDouble() })
+    private val numberVolunteeringThreadsGauge = constructGaugeForMetric("numberVolunteeringThreads", numberVolunteeringThreadsAtomic, { it.get().toDouble() })
 
-    private fun constructCounterForMetric(metricName: String): Counter =
-            metrics.counter("${metricName}Counter", regionName, PARTITIONED_REGION)
+    override fun close() {
+        //Noop
+    }
 
-    private fun constructAtomicIntegerToMonitor(metricName: String): AtomicInteger =
-            metrics.gauge("${metricName}Gauge",listOf(regionName,PARTITIONED_REGION), AtomicInteger(0),AtomicInteger::get)
+    override fun endPut(startTimeInNanos: Long) = putCounter.increment()
+    override fun endPutAll(startTimeInNanos: Long) = putAllCounter.increment()
+    override fun endCreate(startTimeInNanos: Long) = createCounter.increment()
+    override fun endRemoveAll(startTimeInNanos: Long) = removeAllCounter.increment()
+    override fun endGet(startTimeInNanos: Long) = getCounter.increment()
+    override fun endDestroy(startTimeInNanos: Long) = destroyCounter.increment()
+    override fun endInvalidate(startTimeInNanos: Long) = invalidateCounter.increment()
+    override fun endContainsKey(startTimeInNanos: Long) = containsKeyCounter.increment()
+    override fun endContainsValueForKey(startTimeInNanos: Long) = containValueForKeyCounter.increment()
+    override fun incContainsKeyValueRetries() = containsKeyValueRetriesCounter.increment()
+    override fun incContainsKeyValueOpsRetried() = containsKeyValueOpsRetriedCounter.increment()
+    override fun incInvalidateRetries() = invalidateRetriesCounter.increment()
+    override fun incInvalidateOpsRetried() = invalidateOpsRetriedCounter.increment()
+    override fun incDestroyRetries() = destroyRetriesCounter.increment()
+    override fun incDestroyOpsRetried() = destroyOpsRetriedCounter.increment()
+    override fun incPutRetries() = putRetriesCounter.increment()
+    override fun incPutOpsRetried() = putOpsRetriedCounter.increment()
+    override fun incGetOpsRetried() = getOpsRetriedCounter.increment()
+    override fun incGetRetries() = getRetriesCounter.increment()
+    override fun incCreateOpsRetried() = createOpsRetriedCounter.increment()
+    override fun incCreateRetries() = createRetriesCounter.increment()
+    override fun incPreferredReadLocal() = preferredReadLocalCounter.increment()
+    override fun incPreferredReadRemote() = preferredReadRemoteCounter.increment()
+    override fun incPutAllRetries() = putAllRetriesCounter.increment()
+    override fun incPutAllMsgsRetried() = putAllMsgsRetriedCounter.increment()
+    override fun incRemoveAllRetries() = removeAllRetriesCounter.increment()
+    override fun incRemoveAllMsgsRetried() = removeAllMsgsRetriedCounter.increment()
+    override fun incPartitionMessagesSent() = partitionMessagesSentCounter.increment()
+    override fun incBucketCount(bucketCount: Int) = incrementAtomic(bucketCountAtomic,bucketCount)
+    override fun incLowRedundancyBucketCount(lowBucketCount: Int) = incrementAtomic(lowBucketCountAtomic,lowBucketCount)
+    override fun incNoCopiesBucketCount(numberCopiesBucketCount: Int) = incrementAtomic(numberCopiesBucketCountAtomic, numberCopiesBucketCount)
+    override fun incTotalNumBuckets(totalNumberOfBuckets: Int) = incrementAtomic(totalNumberOfBucketsAtomic, totalNumberOfBuckets)
+    override fun incPrimaryBucketCount(primaryBucketCount: Int) = incrementAtomic(primaryBucketCountAtomic, primaryBucketCount)
+    override fun incVolunteeringThreads(numberVolunteeringThreads: Int) = incrementAtomic(numberVolunteeringThreadsAtomic, numberVolunteeringThreads)
+    override fun incPRMetaDataSentCount() = prMetaDataSentCounter.increment()
 
-    open fun endPut(startTimeInNanos: Long) = putCounter.increment()
-    open fun endPutAll(startTimeInNanos: Long) = putAllCounter.increment()
-    open fun endCreate(startTimeInNanos: Long) = createCounter.increment()
-    open fun endRemoveAll(startTimeInNanos: Long) = removeAllCounter.increment()
-    open fun endGet(startTimeInNanos: Long) = getCounter.increment()
-    open fun endDestroy(startTimeInNanos: Long) = destroyCounter.increment()
-    open fun endInvalidate(startTimeInNanos: Long) = invalidateCounter.increment()
-    open fun endContainsKey(startTimeInNanos: Long) = containsKeyCounter.increment()
-    open fun endContainsValueForKey(startTimeInNanos: Long) = containValueForKeyCounter.increment()
-    fun incContainsKeyValueRetries() = containsKeyValueRetriesCounter.increment()
-    fun incContainsKeyValueOpsRetried() = containsKeyValueOpsRetriedCounter.increment()
-    fun incInvalidateRetries() = incInvalidateRetriesCounter.increment()
-    fun incInvalidateOpsRetried() = incInvalidateOpsRetriedCounter.increment()
-    fun incDestroyRetries() = incDestroyRetriesCounter.increment()
-    fun incDestroyOpsRetried() = incDestroyOpsRetriedCounter.increment()
-    fun incPutRetries() = incPutRetriesCounter.increment()
-    fun incPutOpsRetried() = incPutOpsRetriedCounter.increment()
-    fun incGetOpsRetried() = incGetOpsRetriedCounter.increment()
-    fun incGetRetries() = incGetRetriesCounter.increment()
-    fun incCreateOpsRetried() = incCreateOpsRetriedCounter.increment()
-    fun incCreateRetries() = incCreateRetriesCounter.increment()
-    fun incPreferredReadLocal() = incPreferredReadLocalCounter.increment()
-    fun incPreferredReadRemote() = incPreferredReadRemoteCounter.increment()
-    fun incPutAllRetries() = incPutAllRetriesCounter.increment()
-    fun incPutAllMsgsRetried() = incPutAllMsgsRetriedCounter.increment()
-    fun incRemoveAllRetries() = incRemoveAllRetriesCounter.increment()
-    fun incRemoveAllMsgsRetried() = incRemoveAllMsgsRetriedCounter.increment()
-    fun incPartitionMessagesSent() = incPartitionMessagesSentCounter.increment()
-    fun incBucketCount(bucketCount: Int) = incBucketCountGauge.increment(bucketCount.toDouble())
-    fun incLowRedundancyBucketCount(`val`: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun incDataStoreEntryCount(amt: Int) {
 
-    fun incNoCopiesBucketCount(`val`: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun incTotalNumBuckets(`val`: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun incBytesInUse(delta: Long) {
+        0
     }
 
-    fun incPrimaryBucketCount(`val`: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getVolunteeringInProgress(): Int = 0
 
-    fun incVolunteeringThreads(`val`: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun startPartitionMessageProcessing(): Long = 0
 
-    fun incPRMetaDataSentCount() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun endPartitionMessagesProcessing(start: Long) {
 
-    fun incDataStoreEntryCount(amt: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun incBytesInUse(delta: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun setBucketCount(i: Int) {
 
-    fun getVolunteeringInProgress(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun startPartitionMessageProcessing(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
 
-    fun endPartitionMessagesProcessing(start: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getDataStoreEntryCount(): Int = 0
 
-    fun setBucketCount(i: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
 
+    override fun getDataStoreBytesInUse(): Long = 0
 
-    fun getDataStoreEntryCount(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getTotalBucketCount(): Int = 0
 
+    override fun getVolunteeringBecamePrimary(): Int = 0
 
-    fun getDataStoreBytesInUse(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getVolunteeringBecamePrimaryTime(): Long = 0
 
-    fun getTotalBucketCount(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getVolunteeringOtherPrimary(): Int = 0
 
-    fun getVolunteeringBecamePrimary(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getVolunteeringOtherPrimaryTime(): Long = 0
 
-    fun getVolunteeringBecamePrimaryTime(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getVolunteeringClosed(): Int = 0
 
-    fun getVolunteeringOtherPrimary(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getVolunteeringClosedTime(): Long = 0
 
-    fun getVolunteeringOtherPrimaryTime(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun startVolunteering(): Long = 0
 
-    fun getVolunteeringClosed(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun endVolunteeringBecamePrimary(start: Long) {
 
-    fun getVolunteeringClosedTime(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun startVolunteering(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun endVolunteeringOtherPrimary(start: Long) {
 
-    fun endVolunteeringBecamePrimary(start: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun endVolunteeringOtherPrimary(start: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun endVolunteeringClosed(start: Long) {
 
-    fun endVolunteeringClosed(start: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun getTotalNumBuckets(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getTotalNumBuckets(): Int = 0
 
 
-    fun getPrimaryBucketCount(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getPrimaryBucketCount(): Int = 0
 
 
-    fun getVolunteeringThreads(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getVolunteeringThreads(): Int = 0
 
 
-    fun getLowRedundancyBucketCount(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getLowRedundancyBucketCount(): Int = 0
 
-    fun getNoCopiesBucketCount(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getNoCopiesBucketCount(): Int = 0
 
 
-    fun getConfiguredRedundantCopies(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getConfiguredRedundantCopies(): Int = 0
 
-    fun setConfiguredRedundantCopies(`val`: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun setConfiguredRedundantCopies(value: Int) {
 
-    fun setLocalMaxMemory(l: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun getActualRedundantCopies(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun setLocalMaxMemory(l: Long) {
 
-    fun setActualRedundantCopies(`val`: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun putStartTime(key: Any?, startTime: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getActualRedundantCopies(): Int = 0
 
-    fun removeStartTime(key: Any?): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun setActualRedundantCopies(value: Int) {
 
-    fun endGetEntry(startTime: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun endGetEntry(start: Long, numInc: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun putStartTime(key: Any?, startTime: Long) {
 
-    fun startRecovery(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun endRecovery(start: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun removeStartTime(key: Any?): Long = 0
 
-    fun startBucketCreate(isRebalance: Boolean): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun endGetEntry(startTime: Long) {
 
-    fun endBucketCreate(start: Long, success: Boolean, isRebalance: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun startPrimaryTransfer(isRebalance: Boolean): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun endGetEntry(start: Long, numInc: Int) {
 
-    fun endPrimaryTransfer(start: Long, success: Boolean, isRebalance: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun getBucketCreatesInProgress(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun startRecovery(): Long = 0
 
-    fun getBucketCreatesCompleted(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun endRecovery(start: Long) {
 
-    fun getBucketCreatesFailed(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun getBucketCreateTime(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun startBucketCreate(isRebalance: Boolean): Long = 0
 
-    fun getPrimaryTransfersInProgress(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun endBucketCreate(start: Long, success: Boolean, isRebalance: Boolean) {
 
-    fun getPrimaryTransfersCompleted(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun getPrimaryTransfersFailed(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun startPrimaryTransfer(isRebalance: Boolean): Long = 0
 
-    fun getPrimaryTransferTime(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun endPrimaryTransfer(start: Long, success: Boolean, isRebalance: Boolean) {
 
-    fun startRebalanceBucketCreate() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun endRebalanceBucketCreate(start: Long, end: Long, success: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getBucketCreatesInProgress(): Int = 0
 
-    fun startRebalancePrimaryTransfer() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getBucketCreatesCompleted(): Int = 0
 
-    fun endRebalancePrimaryTransfer(start: Long, end: Long, success: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getBucketCreatesFailed(): Int = 0
 
-    fun getRebalanceBucketCreatesInProgress(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getBucketCreateTime(): Long = 0
 
-    fun getRebalanceBucketCreatesCompleted(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getPrimaryTransfersInProgress(): Int = 0
 
-    fun getRebalanceBucketCreatesFailed(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getPrimaryTransfersCompleted(): Int = 0
 
-    fun getRebalanceBucketCreateTime(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getPrimaryTransfersFailed(): Int = 0
 
-    fun getRebalancePrimaryTransfersInProgress(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getPrimaryTransferTime(): Long = 0
 
-    fun getRebalancePrimaryTransfersCompleted(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getRebalanceBucketCreatesInProgress(): Int = 0
 
-    fun getRebalancePrimaryTransfersFailed(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getRebalanceBucketCreatesCompleted(): Int = 0
 
-    fun getRebalancePrimaryTransferTime(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getRebalanceBucketCreatesFailed(): Int = 0
 
-    fun startApplyReplication(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getRebalanceBucketCreateTime(): Long = 0
 
-    fun endApplyReplication(start: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getRebalancePrimaryTransfersInProgress(): Int = 0
 
-    fun startSendReplication(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getRebalancePrimaryTransfersCompleted(): Int = 0
 
-    fun endSendReplication(start: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getRebalancePrimaryTransfersFailed(): Int = 0
 
-    fun startPutRemote(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getRebalancePrimaryTransferTime(): Long = 0
+
+    override fun startApplyReplication(): Long = 0
 
-    fun endPutRemote(start: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun endApplyReplication(start: Long) {
+
     }
+
+    override fun startSendReplication(): Long = 0
 
-    fun startPutLocal(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun endSendReplication(start: Long) {
+
     }
+
+    override fun startPutRemote(): Long = 0
 
-    fun endPutLocal(start: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun endPutRemote(start: Long) {
+
     }
+
+    override fun startPutLocal(): Long = 0
 
+    override fun endPutLocal(start: Long) {
 
-    fun getPRMetaDataSentCount(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+
+    override fun getPRMetaDataSentCount(): Long = 0
 }

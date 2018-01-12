@@ -2694,7 +2694,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * @param bucket the Region containing the bucket data
    */
   public void dumpBucket(int bucketId, final LocalRegion bucket) {
-    Integer buckId = Integer.valueOf(bucketId);
+    Integer buckId = bucketId;
     visitBucket(buckId, bucket, new EntryVisitor() {
       final StringBuffer buf = new StringBuffer("Entries in bucket ").append(bucket).append("\n");
 

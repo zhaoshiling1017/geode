@@ -127,9 +127,9 @@ public class FetchEntryMessage extends PartitionMessage {
         val = (EntrySnapshot) r.getDataView().getEntryOnRemote(keyInfo, r, true);
         r.getPrStats().endPartitionMessagesProcessing(startTime);
         FetchEntryReplyMessage.send(getSender(), getProcessorId(), val, dm, null);
-      } catch (TransactionException tex) {
+      } catch (TransactionException | PrimaryBucketException ex) {
         FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm,
-            new ReplyException(tex));
+            new ReplyException(ex));
       } catch (PRLocallyDestroyedException pde) {
         FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm,
             new ReplyException(new ForceReattemptException(
@@ -139,9 +139,6 @@ public class FetchEntryMessage extends PartitionMessage {
       } catch (EntryNotFoundException enfe) {
         FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm, new ReplyException(
             LocalizedStrings.FetchEntryMessage_ENTRY_NOT_FOUND.toLocalizedString(), enfe));
-      } catch (PrimaryBucketException pbe) {
-        FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm,
-            new ReplyException(pbe));
       } catch (ForceReattemptException pbe) {
         pbe.checkKey(key);
         // Slightly odd -- we're marshalling the retry to the peer on another host...

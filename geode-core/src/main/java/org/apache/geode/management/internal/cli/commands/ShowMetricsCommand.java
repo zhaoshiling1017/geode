@@ -136,10 +136,10 @@ public class ShowMetricsCommand implements GfshCommand {
   }
 
   /**
-   * Gets the system wide metrics
+   * Gets the system wide meterRegistry
    *
    * @return ResultData with required System wide statistics or ErrorResultData if DS MBean is not
-   *         found to gather metrics
+   *         found to gather meterRegistry
    */
   private ResultData getSystemWideMetrics(String export_to_report_to, String[] categoriesArr,
       StringBuilder csvBuilder) {
@@ -164,17 +164,17 @@ public class ShowMetricsCommand implements GfshCommand {
     writeSystemWideMetricValues(dsMxBean, csvBuilder, metricsTable, categoriesToDisplay);
     if (StringUtils.isNotEmpty(export_to_report_to)) {
       crd.addAsFile(export_to_report_to, csvBuilder.toString(),
-          "Cluster wide metrics exported to {0}.", false);
+          "Cluster wide meterRegistry exported to {0}.", false);
     }
 
     return crd;
   }
 
   /**
-   * Gets the Cluster wide metrics for a given member
+   * Gets the Cluster wide meterRegistry for a given member
    *
    * @return ResultData with required Member statistics or ErrorResultData if MemberMbean is not
-   *         found to gather metrics
+   *         found to gather meterRegistry
    * @throws ResultDataException if building result fails
    */
   private ResultData getMemberMetrics(DistributedMember distributedMember,
@@ -228,14 +228,14 @@ public class ShowMetricsCommand implements GfshCommand {
 
     if (StringUtils.isNotEmpty(export_to_report_to)) {
       crd.addAsFile(export_to_report_to, csvBuilder != null ? csvBuilder.toString() : null,
-          "Member metrics exported to {0}.", false);
+          "Member meterRegistry exported to {0}.", false);
     }
     return crd;
 
   }
 
   /**
-   * Gets the Cluster-wide metrics for a region
+   * Gets the Cluster-wide meterRegistry for a region
    *
    * @return ResultData containing the table
    * @throws ResultDataException if building result fails
@@ -275,10 +275,10 @@ public class ShowMetricsCommand implements GfshCommand {
   }
 
   /**
-   * Gets the metrics of region on a given member
+   * Gets the meterRegistry of region on a given member
    *
    * @return ResultData with required Region statistics or ErrorResultData if Region MBean is not
-   *         found to gather metrics
+   *         found to gather meterRegistry
    * @throws ResultDataException if building result fails
    */
   private ResultData getRegionMetricsFromMember(String regionName,

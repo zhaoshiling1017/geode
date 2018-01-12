@@ -1,11 +1,16 @@
 package org.apache.geode.internal.cache
 
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Timer
 import java.util.concurrent.TimeUnit
 
-class TimedMicrometerPartitionedRegionStats(regionName: String) : MicrometerPartitionRegionStats(regionName) {
+class TimedMicrometerPartitionedRegionStats(meterRegistry: MeterRegistry, regionName: String) : MicrometerPartitionRegionStats(meterRegistry,regionName) {
+
+    constructor(regionName:String) : this(MicroMeterRegistryFactory.getMeterRegistry(),regionName)
+
     private fun constructTimerForMetric(metricName: String): Timer =
-            metrics.timer("${metricName}Latency", regionName, PARTITIONED_REGION)
+            meterRegistry.timer("${metricName}Latency", listOf(Tag.of("region", regionName), Tag.of("regionType", PARTITIONED_REGION)))
 
     private val putTimer = constructTimerForMetric("put")
     private val putAllTimer = constructTimerForMetric("putAll")

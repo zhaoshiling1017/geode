@@ -224,7 +224,7 @@ public class TestCommand {
     createTestCommand("netstat --member=server1", ResourcePermissions.CLUSTER_READ);
     createTestCommand("show dead-locks --file=deadlocks.txt", ResourcePermissions.CLUSTER_READ);
     createTestCommand("show log --member=locator1 --lines=5", ResourcePermissions.CLUSTER_READ);
-    createTestCommand("show metrics", ResourcePermissions.CLUSTER_READ);
+    createTestCommand("show meterRegistry", ResourcePermissions.CLUSTER_READ);
 
 
     // PDX Commands
