@@ -36,10 +36,8 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
-import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
 import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -74,13 +72,10 @@ public class LuceneCreateIndexFunction implements InternalEntity, Function {
     try {
       final LuceneIndexInfo indexInfo = (LuceneIndexInfo) context.getArguments();
       final Cache cache = context.getCache();
-      final String indexName = indexInfo.getIndexName();
-      final String regionPath = indexInfo.getRegionPath();
-
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
       LuceneService service = LuceneServiceProvider.get(cache);
 
-      INDEX_NAME.validateName(indexName);
+      INDEX_NAME.validateName(indexInfo.getIndexName());
 
       String[] fields = indexInfo.getSearchableFieldNames();
       String[] analyzerName = indexInfo.getFieldAnalyzers();
@@ -105,17 +100,15 @@ public class LuceneCreateIndexFunction implements InternalEntity, Function {
         indexFactory.setLuceneSerializer(toSerializer(serializerName));
       }
 
-      XmlEntity xmlEntity = null;
-      REGION_PATH.validateName(regionPath);
+      REGION_PATH.validateName(indexInfo.getRegionPath());
       if (LuceneServiceImpl.LUCENE_REINDEX) {
-        indexFactory.create(indexName, regionPath, true);
-        if (cache.getRegion(regionPath) != null) {
-          xmlEntity = getXmlEntity(indexName, regionPath);
-        }
+        indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath(), true);
       } else {
-        indexFactory.create(indexName, regionPath, false);
+        indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath(), false);
       }
 
+      // TODO - update cluster configuration by returning a valid XmlEntity
+      XmlEntity xmlEntity = null;
       context.getResultSender().lastResult(new CliFunctionResult(memberId, xmlEntity));
     } catch (Exception e) {
       String exceptionMessage = CliStrings.format(CliStrings.EXCEPTION_CLASS_AND_MESSAGE,
@@ -124,11 +117,6 @@ public class LuceneCreateIndexFunction implements InternalEntity, Function {
     }
   }
 
-  protected XmlEntity getXmlEntity(String indexName, String regionPath) {
-    String regionName = StringUtils.stripStart(regionPath, "/");
-    return new XmlEntity(CacheXml.REGION, "name", regionName);
-  }
-  
   @Override
   public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
     return Collections.singleton(

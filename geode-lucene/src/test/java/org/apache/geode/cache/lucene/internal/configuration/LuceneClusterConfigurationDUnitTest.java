@@ -22,7 +22,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
@@ -70,13 +69,15 @@ public class LuceneClusterConfigurationDUnitTest {
 
   @Test
   public void indexGetsCreatedUsingClusterConfiguration() throws Exception {
-    createServer(1);
+    ls.startServerVM(1, locator.getPort());
 
     // Connect Gfsh to locator.
     gfshConnector.connectAndVerify(locator);
 
     // Create lucene index.
-    createLuceneIndexAndDataRegion();
+    createLuceneIndexUsingGfsh();
+
+    createRegionUsingGfsh(REGION_NAME, RegionShortcut.PARTITION, null);
 
     // Start vm2. This should have lucene index created using cluster
     // configuration.
@@ -89,27 +90,22 @@ public class LuceneClusterConfigurationDUnitTest {
     });
   }
 
-  void createLuceneIndexAndDataRegion() throws Exception {
-    createLuceneIndexUsingGfsh();
-    createRegionUsingGfsh(REGION_NAME, RegionShortcut.PARTITION, null);
-  }
-
-  MemberVM createServer(int index) throws IOException {
-    return ls.startServerVM(index, locator.getPort());
-  }
-
 
   @Test
   public void indexWithAnalyzerGetsCreatedUsingClusterConfiguration() throws Exception {
-    createServer(1);
+    ls.startServerVM(1, locator.getPort());
+
     // Connect Gfsh to locator.
     gfshConnector.connectAndVerify(locator);
 
-    createLuceneIndexWithAnalyzerAndDataRegion();
+    // Create lucene index.
+    createLuceneIndexWithAnalyzerUsingGfsh();
+
+    createRegionUsingGfsh(REGION_NAME, RegionShortcut.PARTITION, null);
 
     // Start vm2. This should have lucene index created using cluster
     // configuration.
-    MemberVM vm2 = createServer(2);
+    MemberVM vm2 = ls.startServerVM(2, locator.getPort());
     vm2.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(ClusterStartupRule.getCache());
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
@@ -125,21 +121,17 @@ public class LuceneClusterConfigurationDUnitTest {
     });
   }
 
-  void createLuceneIndexWithAnalyzerAndDataRegion() throws Exception {
-    // Create lucene index.
-    createLuceneIndexWithAnalyzerUsingGfsh();
-    createRegionUsingGfsh(REGION_NAME, RegionShortcut.PARTITION, null);
-  }
-
   @Test
   public void indexWithSerializerGetsCreatedUsingClusterConfiguration() throws Exception {
-    createServer(1);
+    ls.startServerVM(1, locator.getPort());
 
     // Connect Gfsh to locator.
     gfshConnector.connectAndVerify(locator);
 
     // Create lucene index.
-    createLuceneIndexWithSerializerAndDataRegion();
+    createLuceneIndexWithSerializerUsingGfsh(false);
+
+    createRegionUsingGfsh(REGION_NAME, RegionShortcut.PARTITION, null);
 
     // Start vm2. This should have lucene index created using cluster
     // configuration.
@@ -155,24 +147,15 @@ public class LuceneClusterConfigurationDUnitTest {
     });
   }
 
-  void createLuceneIndexWithSerializerAndDataRegion() throws Exception {
-    createLuceneIndexWithSerializerUsingGfsh();
-
-    createRegionUsingGfsh(REGION_NAME, RegionShortcut.PARTITION, null);
-  }
-
   @Test
   public void verifyClusterConfigurationAfterDestroyIndex() throws Exception {
-    createServer(1);
+    ls.startServerVM(1, locator.getPort());
 
     // Connect Gfsh to locator.
     gfshConnector.connectAndVerify(locator);
 
     // Create and add indexes
     createAndAddIndexes();
-
-    // Verify cluster configuration contains the indexes
-    locator.invoke(verifyClusterConfiguration(true));
 
     // Destroy one index
     destroyLuceneIndexUsingGfsh(INDEX_NAME + "0");
@@ -186,16 +169,13 @@ public class LuceneClusterConfigurationDUnitTest {
 
   @Test
   public void verifyClusterConfigurationAfterDestroyIndexes() throws Exception {
-    createServer(1);
+    ls.startServerVM(1, locator.getPort());
 
     // Connect Gfsh to locator.
     gfshConnector.connectAndVerify(locator);
 
     // Create and add indexes
     createAndAddIndexes();
-
-    // Verify cluster configuration contains the indexes
-    locator.invoke(verifyClusterConfiguration(true));
 
     // Destroy all indexes
     destroyLuceneIndexUsingGfsh(null);
@@ -207,19 +187,20 @@ public class LuceneClusterConfigurationDUnitTest {
   @Test
   public void verifyMemberWithGroupStartsAfterAlterRegion() throws Exception {
     // Start a member with no group
-    createServer(1);
+    ls.startServerVM(1, locator.getPort());
 
     // Start a member with group
     String group = "group1";
     Properties properties = new Properties();
     properties.setProperty(GROUPS, group);
-    MemberVM vm2 = createServer(properties, 2);
+    MemberVM vm2 = ls.startServerVM(2, properties, locator.getPort());
 
     // Connect Gfsh to locator
     gfshConnector.connectAndVerify(locator);
 
     // Create index and region in no group
-    createLuceneIndexAndDataRegion();
+    createLuceneIndexUsingGfsh();
+    createRegionUsingGfsh(REGION_NAME, RegionShortcut.PARTITION, null);
 
     // Alter region in group
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
@@ -233,7 +214,7 @@ public class LuceneClusterConfigurationDUnitTest {
         .tableHasColumnWithExactValuesInExactOrder("Status", expectedStatusOutput);
 
     // Start another member with group
-    createServer(properties, 3);
+    ls.startServerVM(3, properties, locator.getPort());
 
     // Verify all members have indexes
     csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
@@ -242,11 +223,7 @@ public class LuceneClusterConfigurationDUnitTest {
             "Initialized");
   }
 
-  MemberVM createServer(Properties properties, int index) throws Exception {
-    return ls.startServerVM(index, properties, locator.getPort());
-  }
-
-  void createAndAddIndexes() throws Exception {
+  private void createAndAddIndexes() throws Exception {
     // Create lucene index.
     createLuceneIndexUsingGfsh(INDEX_NAME + "0");
 
@@ -256,9 +233,11 @@ public class LuceneClusterConfigurationDUnitTest {
     // Create region
     createRegionUsingGfsh(REGION_NAME, RegionShortcut.PARTITION, null);
 
+    // Verify cluster configuration contains the indexes
+    locator.invoke(verifyClusterConfiguration(true));
   }
 
-  SerializableRunnableIF verifyClusterConfiguration(boolean verifyIndexesExist) {
+  private SerializableRunnableIF verifyClusterConfiguration(boolean verifyIndexesExist) {
     return () -> {
       InternalLocator internalLocator = ClusterStartupRule.getLocator();
       ClusterConfigurationService sc = internalLocator.getSharedConfiguration();
@@ -281,11 +260,11 @@ public class LuceneClusterConfigurationDUnitTest {
   }
 
 
-  void createLuceneIndexUsingGfsh() throws Exception {
+  private void createLuceneIndexUsingGfsh() throws Exception {
     createLuceneIndexUsingGfsh(INDEX_NAME);
   }
 
-  void createLuceneIndexUsingGfsh(String indexName) throws Exception {
+  private void createLuceneIndexUsingGfsh(String indexName) throws Exception {
     // Execute Gfsh command to create lucene index.
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, indexName);
@@ -294,7 +273,7 @@ public class LuceneClusterConfigurationDUnitTest {
     gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
-  void createLuceneIndexWithAnalyzerUsingGfsh() throws Exception {
+  private void createLuceneIndexWithAnalyzerUsingGfsh() throws Exception {
     // Gfsh command to create lucene index.
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -309,7 +288,7 @@ public class LuceneClusterConfigurationDUnitTest {
     gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
-  void createLuceneIndexWithSerializerUsingGfsh() throws Exception {
+  private void createLuceneIndexWithSerializerUsingGfsh(boolean addGroup) throws Exception {
     // Gfsh command to create lucene index.
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -332,7 +311,7 @@ public class LuceneClusterConfigurationDUnitTest {
     gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
-  void createRegionUsingGfsh(String regionName, RegionShortcut regionShortCut, String group)
+  private void createRegionUsingGfsh(String regionName, RegionShortcut regionShortCut, String group)
       throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
     csb.addOption(CliStrings.CREATE_REGION__REGION, regionName);
