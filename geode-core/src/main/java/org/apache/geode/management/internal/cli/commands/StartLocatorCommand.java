@@ -175,7 +175,7 @@ public class StartLocatorCommand implements GfshCommand {
 //=======
     // read the OSProcess enable redirect system property here
     // TODO: replace with new GFSH argument
-    final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
+//    redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
     LocatorLauncher.Builder locatorLauncherBuilder = (LocatorLauncher.Builder)
 //>>>>>>> theirs
         new LocatorLauncher.Builder().setBindAddress(bindAddress).setForce(force).setPort(port)

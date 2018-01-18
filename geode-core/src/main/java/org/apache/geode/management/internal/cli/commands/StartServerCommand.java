@@ -280,8 +280,8 @@ public class StartServerCommand implements GfshCommand {
 //=======
     // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH
     // argument
-    final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
-
+//    final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
+//
     ServerLauncher.Builder serverLauncherBuilder = (ServerLauncher.Builder)
 	((ServerLauncher.Builder)
 	((ServerLauncher.Builder)

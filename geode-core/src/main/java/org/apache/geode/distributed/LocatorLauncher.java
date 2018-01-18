@@ -633,7 +633,7 @@ ator.
 //          this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
 //              getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients());
 //=======
-          this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null, null,
+          this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
               getBindAddress(), true, getDistributedSystemProperties(), getHostNameForClients());
 //>>>>>>> theirs
         } finally {
