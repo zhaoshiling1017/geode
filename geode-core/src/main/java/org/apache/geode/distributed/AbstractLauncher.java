@@ -33,9 +33,9 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.BindException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -111,8 +111,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   protected Logger logger = Logger.getLogger(getClass().getName());
 
   /**
-   * Gets the instance of the AbstractLauncher used to launch the GemFire service, or null if this VM
-   * does not have an instance of AbstractLauncher indicating no GemFire service is running.
+   * Gets the instance of the AbstractLauncher used to launch the GemFire service, or null if this
+   * VM does not have an instance of AbstractLauncher indicating no GemFire service is running.
    *
    * @return the instance of AbstractLauncher used to launcher a GemFire service in this VM.
    */
@@ -120,7 +120,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     return INSTANCE.get();
   }
 
-  abstract public Properties getProperties(); // TODO: GEODE-3584
+  public abstract Properties getProperties(); // TODO: GEODE-3584
 
   public AbstractLauncher() {
     try {
@@ -444,15 +444,15 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   }
 
   /**
-   * Attempts to determine the state of the service. 
+   * Attempts to determine the state of the service.
    */
-  abstract public ServiceState<T> status();
+  public abstract ServiceState<T> status();
 
   abstract boolean isStoppable();
 
   abstract ServiceState<T> stopInProcess();
 
-  abstract public ServiceState<T> start();
+  public abstract ServiceState<T> start();
 
   ServiceState<T> stopWithPid() {
     try {
@@ -519,9 +519,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     int parsedPid = 0;
     ProcessType pt = getProcessType();
     try {
-      final ProcessController controller =
-          new ProcessControllerFactory().createProcessController(this.controllerParameters,
-              new File(getWorkingDirectory()), pt.getPidFileName());
+      final ProcessController controller = new ProcessControllerFactory().createProcessController(
+          this.controllerParameters, new File(getWorkingDirectory()), pt.getPidFileName());
       parsedPid = controller.getProcessId();
 
       // NOTE in-process request will go infinite loop unless we do the following
@@ -540,8 +539,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
           "Failed to connect to service with process id " + parsedPid);
     } catch (FileNotFoundException handled) {
       // could not find pid file
-      return createNoResponseState(handled, "Failed to find process file "
-          + pt.getPidFileName() + " in " + getWorkingDirectory());
+      return createNoResponseState(handled,
+          "Failed to find process file " + pt.getPidFileName() + " in " + getWorkingDirectory());
     } catch (IOException | MBeanInvocationFailedException
         | UnableToControlProcessException handled) {
       return createNoResponseState(handled,
@@ -556,8 +555,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
           + pt.getPidFileName() + " in " + getWorkingDirectory());
     } catch (TimeoutException handled) {
       return createNoResponseState(handled,
-          "Timed out trying to find usable process id within file "
-              + pt.getPidFileName() + " in " + getWorkingDirectory());
+          "Timed out trying to find usable process id within file " + pt.getPidFileName() + " in "
+              + getWorkingDirectory());
     }
   }
 
@@ -1019,13 +1018,13 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   /**
    * Following the Builder design pattern, the AbstractLauncher Builder is used to configure and
-   * create a properly initialized instance of a subclass of AbstractLauncher class for running
-   * the Launcher and performing other Launcher operations.
+   * create a properly initialized instance of a subclass of AbstractLauncher class for running the
+   * Launcher and performing other Launcher operations.
    */
   public abstract static class Builder {
 
-    /* protected static final Command DEFAULT_COMMAND = Command.UNSPECIFIED;
-     * GEODE-3584: Command is an enumeration that has to be refactored as well */
+    // protected static final Command DEFAULT_COMMAND = Command.UNSPECIFIED;
+    // GEODE-3584: Command is an enumeration that has to be refactored as well
 
     private Boolean debug;
     private Boolean deletePidFileOnStop;
@@ -1065,7 +1064,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       parseArguments(args != null ? args : new String[0]);
     }
 
-    abstract protected void parseArguments(final String... args);
+    protected abstract void parseArguments(final String... args);
 
     /**
      * Iterates the list of arguments in search of the target launcher command.
@@ -1074,23 +1073,22 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * @see org.apache.geode.distributed.AbstractLauncher.Command#valueOfName(String)
      * @see #parseArguments(String...)
      */
-    abstract protected void parseCommand(final String... args); // TODO
-    /** GEODE-3584: Command needs refactoring as well
-    protected void parseCommand(final String... args) {
-      // search the list of arguments for the command; technically, the command should be the first
-      // argument in the
-      // list, but does it really matter? stop after we find one valid command.
-      if (args != null) {
-        for (String arg : args) {
-          final Command command = Command.valueOfName(arg);
-          if (command != null) {
-            setCommand(command);
-            break;
-          }
-        }
-      }
-    }
-    */
+    protected abstract void parseCommand(final String... args); // TODO
+    // GEODE-3584: Command needs refactoring as well
+    // protected void parseCommand(final String... args) {
+    // // search the list of arguments for the command; technically, the command should be the first
+    // // argument in the
+    // // list, but does it really matter? stop after we find one valid command.
+    // if (args != null) {
+    // for (String arg : args) {
+    // final Command command = Command.valueOfName(arg);
+    // if (command != null) {
+    // setCommand(command);
+    // break;
+    // }
+    // }
+    // }
+    // }
 
     /**
      * Iterates the list of arguments in search of the Launcher's GemFire member name. If the
@@ -1102,31 +1100,31 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * @see org.apache.geode.distributed.AbstractLauncher.Command#isCommand(String)
      * @see #parseArguments(String...)
      */
-    abstract protected void parseMemberName(final String... args); // TODO: GEODE-3584
-    /** GEODE-3584: Command needs refactoring as well
-    protected void parseMemberName(final String... args) {
-      if (args != null) {
-        for (String arg : args) {
-          if (!(arg.startsWith(OPTION_PREFIX) || Command.isCommand(arg))) {
-            setMemberName(arg);
-            break;
-          }
-        }
-      }
-    }
-    */
+    protected abstract void parseMemberName(final String... args); // TODO: GEODE-3584
+    // GEODE-3584: Command needs refactoring as well
+    // protected void parseMemberName(final String... args) {
+    // if (args != null) {
+    // for (String arg : args) {
+    // if (!(arg.startsWith(OPTION_PREFIX) || Command.isCommand(arg))) {
+    // setMemberName(arg);
+    // break;
+    // }
+    // }
+    // }
+    // }
 
-    /** TODO: GEODE-3584
-     * Gets the launcher command used during the invocation of the AbstractLauncher.
+    /**
+     * TODO: GEODE-3584 Gets the launcher command used during the invocation of the
+     * AbstractLauncher.
      *
      * @return the launcher command used to invoke (run) the AbstractLauncher class.
      * @see #setCommand(org.apache.geode.distributed.AbstractLauncher.Command)
      * @see AbstractLauncher.Command
      */
-    /** TODO: GEODE-3584 // Command is an enumeration that needs refactoring
-    public Command getCommand() {
-      return defaultIfNull(this.command, DEFAULT_COMMAND);
-    } */
+    // TODO: GEODE-3584 // Command is an enumeration that needs refactoring
+    // public Command getCommand() {
+    // return defaultIfNull(this.command, DEFAULT_COMMAND);
+    // }
 
     /**
      * Sets the launcher command used during the invocation of the subclass of AbstractLauncher
@@ -1137,11 +1135,11 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * @see #getCommand()
      * @see AbstractLauncher.Command
      */
-    /** TODO: GEODE-3584 // Command is an enumeration that needs refactoring
-    public Builder setCommand(final Command command) {
-      this.command = command;
-      return this;
-    } */
+    // TODO: GEODE-3584 // Command is an enumeration that needs refactoring
+    // public Builder setCommand(final Command command) {
+    // this.command = command;
+    // return this;
+    // }
 
     /**
      * Determines whether the new instance of the AbstractLauncher will be set to debug mode.
@@ -1263,12 +1261,12 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       return this;
     }
 
-    /** GEODE-3584: This is similar to isServerBindAddressByUser in ServerLauncher */
-    /**
-    boolean isBindAddressSpecified() {
-      return (getBindAddress() != null);
-
-    }*/
+    // GEODE-3584: This is similar to isServerBindAddressByUser in ServerLauncher */
+    // /**
+    // boolean isBindAddressSpecified() {
+    // return (getBindAddress() != null);
+    //
+    // }
 
     /**
      * Gets the IP address to which the service has bound itself listening for client requests.
@@ -1289,8 +1287,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * @param bindAddress the InetAddress with the IP address or host name on which the service is
      *        bound and listening.
      * @return this Builder instance.
-     * @throws IllegalArgumentException wrapping the UnknownHostException if the IP address or
-     *         host name for the bind address is unknown.
+     * @throws IllegalArgumentException wrapping the UnknownHostException if the IP address or host
+     *         name for the bind address is unknown.
      * @see #getBindAddress()
      * @see java.net.InetAddress
      */
@@ -1299,8 +1297,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
         this.bindAddress = null;
         return this;
       }
-        // NOTE only set the 'bind address' if the user specified a value
-        else {
+      // NOTE only set the 'bind address' if the user specified a value
+      else {
         try {
           InetAddress address = InetAddress.getByName(bindAddress);
           if (SocketCreator.isLocalHost(address)) {
@@ -1385,8 +1383,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     /**
      * Gets the process ID (PID) of the running service indicated by the user as an argument to the
-     * AbstractLauncher. This PID is used by the launcher to determine the service's status,
-     * or invoke shutdown on the Launcher.
+     * AbstractLauncher. This PID is used by the launcher to determine the service's status, or
+     * invoke shutdown on the Launcher.
      *
      * @return a user specified Integer value indicating the process ID of the running Launcher.
      * @see #setPid(Integer)
@@ -1422,7 +1420,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * @return the specified service port or the default port if unspecified.
      * @see #setPort(Integer)
      */
-    abstract public Integer getPort();
+    public abstract Integer getPort();
 
     /**
      * Sets the port number used by the service to listen for client requests. The port number must
@@ -1561,62 +1559,59 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      *
      * @see org.apache.geode.distributed.AbstractLauncher.Command#START
      */
-    abstract protected void validateOnStart();
-    /** GEODE-3584: Command needs to be refactored
-    protected void validateOnStart() {
-      if (Command.START == getCommand()) {
-        if (isBlank(getMemberName())
-            && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + NAME)
-            && !isSet(getDistributedSystemProperties(), NAME)
-            && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), NAME)) {
-          throw new IllegalStateException(
-              LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
-                  .toLocalizedString(SERVICE_NAME));
-        }
-
-        if (!CURRENT_DIRECTORY.equals(getWorkingDirectory())) {
-          throw new IllegalStateException(
-              LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
-                  .toLocalizedString(SERVICE_NAME));
-        }
-      }
-    }
-    */
+    protected abstract void validateOnStart();
+    // GEODE-3584: Command needs to be refactored
+    // protected void validateOnStart() {
+    // if (Command.START == getCommand()) {
+    // if (isBlank(getMemberName())
+    // && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + NAME)
+    // && !isSet(getDistributedSystemProperties(), NAME)
+    // && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), NAME)) {
+    // throw new IllegalStateException(
+    // LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
+    // .toLocalizedString(SERVICE_NAME));
+    // }
+    //
+    // if (!CURRENT_DIRECTORY.equals(getWorkingDirectory())) {
+    // throw new IllegalStateException(
+    // LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
+    // .toLocalizedString(SERVICE_NAME));
+    // }
+    // }
+    // }
 
     /**
      * Validates the arguments passed to the Builder when the 'status' command has been issued.
      *
      * @see org.apache.geode.distributed.AbstractLauncher.Command#STATUS
      */
-    abstract protected void validateOnStatus();
-    /** GEODE-3584: Command needs to be refactored
-    protected void validateOnStatus() {
-      if (Command.STATUS == getCommand()) {
-      }
-    }
-    */
+    protected abstract void validateOnStatus();
+    // GEODE-3584: Command needs to be refactored
+    // protected void validateOnStatus() {
+    // if (Command.STATUS == getCommand()) {
+    // }
+    // }
 
     /**
      * Validates the arguments passed to the Builder when the 'stop' command has been issued.
      *
      * @see org.apache.geode.distributed.AbstractLauncher.Command#STOP
      */
-    abstract protected void validateOnStop();
-    /** GEODE-3584: Command needs to be refactored
-    protected void validateOnStop() {
-      if (Command.STOP == getCommand()) {
-      }
-    }
-    */
+    protected abstract void validateOnStop();
+    // GEODE-3584: Command needs to be refactored
+    // protected void validateOnStop() {
+    // if (Command.STOP == getCommand()) {
+    // }
+    // }
 
     /**
-     * Validates the Builder configuration settings and then constructs an instance of the
-     * service class to invoke operations on a GemFire service.
+     * Validates the Builder configuration settings and then constructs an instance of the service
+     * class to invoke operations on a GemFire service.
      *
      * @return a newly constructed instance of service configured with this Builder.
      * @see #validate()
      * @see org.apache.geode.distributed.AbstractLauncher
      */
-    abstract public AbstractLauncher build();
+    public abstract AbstractLauncher build();
   }
 }

@@ -192,8 +192,7 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
         builder.set("locators", serverHostName + "[" + locatorPort + "]").setMemberName(memberName)
             .set("log-level", "config").setHostNameForClients(serverHostName)
             .setWorkingDirectory(workingDirectory.getCanonicalPath()).setPdxDiskStore("pdxDS")
-            .setBindAddress(serverHostName).setPort(0)
-            .setPdxPersistent(true).build();
+            .setBindAddress(serverHostName).setPort(0).setPdxPersistent(true).build();
     serverLauncher.start();
 
     Cache cache = CacheFactory.getAnyInstance();

@@ -131,15 +131,41 @@ public class AbstractLauncherServiceStateTest {
       this.logFile = new File(memberName + ".log");
     }
 
-    boolean isStoppable() { return false; }
-    ServiceState<String> stopInProcess() { return null; }
-    ServiceState<String> createNoResponseState(final Exception cause, final String msg) { return null; }
-    ServiceState<String> createNotRespondingState() { return null; }
-    ServiceState<String> createStoppedState() { return null; }
-    ProcessController createProcessController() { return null; }
-    ProcessType getProcessType() { return null; }
-    public Properties getProperties() { return null; }
-    public ServiceState<String> start() { return null; }
+    boolean isStoppable() {
+      return false;
+    }
+
+    ServiceState<String> stopInProcess() {
+      return null;
+    }
+
+    ServiceState<String> createNoResponseState(final Exception cause, final String msg) {
+      return null;
+    }
+
+    ServiceState<String> createNotRespondingState() {
+      return null;
+    }
+
+    ServiceState<String> createStoppedState() {
+      return null;
+    }
+
+    ProcessController createProcessController() {
+      return null;
+    }
+
+    ProcessType getProcessType() {
+      return null;
+    }
+
+    public Properties getProperties() {
+      return null;
+    }
+
+    public ServiceState<String> start() {
+      return null;
+    }
 
     public TestState status() {
       return new TestState(Status.ONLINE, null, System.currentTimeMillis(), getId(), pid, uptime,

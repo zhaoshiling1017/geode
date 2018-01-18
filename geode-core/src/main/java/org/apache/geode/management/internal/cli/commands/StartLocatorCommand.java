@@ -170,16 +170,16 @@ public class StartLocatorCommand implements GfshCommand {
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, jmxManagerHostnameForClients);
 
-//<<<<<<< ours
-//    LocatorLauncher.Builder locatorLauncherBuilder =
-//=======
+    // <<<<<<< ours
+    // LocatorLauncher.Builder locatorLauncherBuilder =
+    // =======
     // read the OSProcess enable redirect system property here
     // TODO: replace with new GFSH argument
-//    redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
+    // redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
     LocatorLauncher.Builder locatorLauncherBuilder = (LocatorLauncher.Builder)
-//>>>>>>> theirs
-        new LocatorLauncher.Builder().setBindAddress(bindAddress).setForce(force).setPort(port)
-            .setRedirectOutput(redirectOutput).setWorkingDirectory(workingDirectory);
+    // >>>>>>> theirs
+    new LocatorLauncher.Builder().setBindAddress(bindAddress).setForce(force).setPort(port)
+        .setRedirectOutput(redirectOutput).setWorkingDirectory(workingDirectory);
     if (hostnameForClients != null) {
       locatorLauncherBuilder.setHostNameForClients(hostnameForClients);
     }

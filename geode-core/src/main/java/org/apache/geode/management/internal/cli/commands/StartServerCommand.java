@@ -275,28 +275,28 @@ public class StartServerCommand implements GfshCommand {
       gemfireProperties.setProperty(ResourceConstants.PASSWORD, passwordToUse);
     }
 
-//<<<<<<< ours
-//    ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder()
-//=======
+    // <<<<<<< ours
+    // ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder()
+    // =======
     // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH
     // argument
-//    final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
-//
-    ServerLauncher.Builder serverLauncherBuilder = (ServerLauncher.Builder)
-	((ServerLauncher.Builder)
-	((ServerLauncher.Builder)
-	((ServerLauncher.Builder)new ServerLauncher.Builder()
-//>>>>>>> theirs
-        .setAssignBuckets(assignBuckets).setDisableDefaultServer(disableDefaultServer)
-        .setForce(force)).setRebalance(rebalance).setRedirectOutput(redirectOutput)
-        .setBindAddress(serverBindAddress).setPort(serverPort))
-        .setSpringXmlLocation(springXmlLocation).setWorkingDirectory(workingDirectory))
-        .setCriticalHeapPercentage(criticalHeapPercentage)
-        .setEvictionHeapPercentage(evictionHeapPercentage)
-        .setCriticalOffHeapPercentage(criticalOffHeapPercentage)
-        .setEvictionOffHeapPercentage(evictionOffHeapPercentage).setMaxConnections(maxConnections)
-        .setMaxMessageCount(maxMessageCount).setMaxThreads(maxThreads)
-        .setMessageTimeToLive(messageTimeToLive).setSocketBufferSize(socketBufferSize);
+    // final boolean redirectOutput =
+    // Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
+    //
+    ServerLauncher.Builder serverLauncherBuilder =
+        (ServerLauncher.Builder) ((ServerLauncher.Builder) ((ServerLauncher.Builder) ((ServerLauncher.Builder) new ServerLauncher.Builder()
+            // >>>>>>> theirs
+            .setAssignBuckets(assignBuckets).setDisableDefaultServer(disableDefaultServer)
+            .setForce(force)).setRebalance(rebalance).setRedirectOutput(redirectOutput)
+                .setBindAddress(serverBindAddress).setPort(serverPort))
+                    .setSpringXmlLocation(springXmlLocation).setWorkingDirectory(workingDirectory))
+                        .setCriticalHeapPercentage(criticalHeapPercentage)
+                        .setEvictionHeapPercentage(evictionHeapPercentage)
+                        .setCriticalOffHeapPercentage(criticalOffHeapPercentage)
+                        .setEvictionOffHeapPercentage(evictionOffHeapPercentage)
+                        .setMaxConnections(maxConnections).setMaxMessageCount(maxMessageCount)
+                        .setMaxThreads(maxThreads).setMessageTimeToLive(messageTimeToLive)
+                        .setSocketBufferSize(socketBufferSize);
     if (hostNameForClients != null) {
       serverLauncherBuilder.setHostNameForClients(hostNameForClients);
     }
@@ -471,8 +471,7 @@ public class StartServerCommand implements GfshCommand {
     }
 
     if (launcher.getBindAddress() != null) {
-      commandLine
-          .add("--server-bind-address=" + launcher.getBindAddress().getCanonicalHostName());
+      commandLine.add("--server-bind-address=" + launcher.getBindAddress().getCanonicalHostName());
     }
 
     if (launcher.getPort() != null) {

@@ -115,18 +115,18 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-//<<<<<<< ours
-//  public void getRedirectOutputReturnsNullByDefault() throws Exception {
-//    assertThat(new Builder().getRedirectOutput()).isNull();
-//  }
-//
-//  @Test
-//  public void getServerBindAddressReturnsNullByDefault() throws Exception {
-//    assertThat(new Builder().getServerBindAddress()).isNull();
-//=======
+  // <<<<<<< ours
+  // public void getRedirectOutputReturnsNullByDefault() throws Exception {
+  // assertThat(new Builder().getRedirectOutput()).isNull();
+  // }
+  //
+  // @Test
+  // public void getServerBindAddressReturnsNullByDefault() throws Exception {
+  // assertThat(new Builder().getServerBindAddress()).isNull();
+  // =======
   public void getBindAddressReturnsNullByDefault() throws Exception {
     assertThat(new Builder().getBindAddress()).isNull();
-//>>>>>>> theirs
+    // >>>>>>> theirs
   }
 
   @Test
@@ -217,18 +217,18 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-//<<<<<<< ours
+  // <<<<<<< ours
   public void setRedirectOutputReturnsBuilderInstance() throws Exception {
     Builder builder = new Builder();
 
     assertThat(builder.setRedirectOutput(Boolean.TRUE)).isSameAs(builder);
   }
 
-//  @Test
-//  public void setServerPortReturnsBuilderInstance() throws Exception {
-//=======
+  // @Test
+  // public void setServerPortReturnsBuilderInstance() throws Exception {
+  // =======
   public void setPortReturnsBuilderInstance() throws Exception {
-//>>>>>>> theirs
+    // >>>>>>> theirs
     Builder builder = new Builder();
 
     assertThat(builder.setPort(null)).isSameAs(builder);

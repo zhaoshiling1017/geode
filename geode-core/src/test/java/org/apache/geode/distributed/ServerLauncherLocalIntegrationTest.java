@@ -86,8 +86,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
 
   @Test
   public void startWithPortZeroUsesAnEphemeralPort() throws Exception {
-    ServerLauncher launcher =
-        startServer(newBuilder().setDisableDefaultServer(false).setPort(0));
+    ServerLauncher launcher = startServer(newBuilder().setDisableDefaultServer(false).setPort(0));
 
     assertThat(launcher.getCache().getCacheServers().get(0).getPort()).isGreaterThan(0);
   }

@@ -241,7 +241,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @return the ServerState for this process or null.
    */
   public static ServerState getServerState() {
-    return (ServerState)(getInstance() != null ? getInstance().status() : null);
+    return (ServerState) (getInstance() != null ? getInstance().status() : null);
   }
 
   /**
@@ -821,7 +821,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   public ServerState stop() {
-    return (ServerState)super.stop();
+    return (ServerState) super.stop();
   }
 
   private Cache createCache(Properties gemfireProperties) {
@@ -1025,7 +1025,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * server).
    */
   public ServerState status() {
-    final ServerLauncher launcher = (ServerLauncher)getInstance();
+    final ServerLauncher launcher = (ServerLauncher) getInstance();
     // if this instance is running then return local status
     if (isStartingOrRunning()) {
       debug(
@@ -1094,7 +1094,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
       // note: in-process request will go infinite loop unless we do the following
       if (parsedPid == identifyPid()) {
-        final ServerLauncher runningLauncher = (ServerLauncher)getInstance();
+        final ServerLauncher runningLauncher = (ServerLauncher) getInstance();
         if (runningLauncher != null) {
           return runningLauncher.statusInProcess();
         }
@@ -1156,8 +1156,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   ProcessController createProcessController() {
-    return new ProcessControllerFactory()
-          .createProcessController(this.controllerParameters, getPid());
+    return new ProcessControllerFactory().createProcessController(this.controllerParameters,
+        getPid());
   }
 
   ProcessType getProcessType() {
@@ -1285,7 +1285,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     private Integer socketBufferSize;
     private Integer maxThreads;
 
-    private final static String SERVICE_NAME = "Server";
+    private static final String SERVICE_NAME = "Server";
 
     public Builder(final String... args) {
       super(args);
@@ -1563,7 +1563,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return this;
     }
 
-    /* The following methods call the super class but override its method so the correct type can be returned. */
+    /*
+     * The following methods call the super class but override its method so the correct type can be
+     * returned.
+     */
 
     public Builder setDebug(final Boolean debug) {
       super.setDebug(debug);
@@ -1723,7 +1726,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @throws IllegalArgumentException if the port number is not valid.
      * @see #getServerPort()
      */
-    @Override public Builder setPort(final Integer port) {
+    @Override
+    public Builder setPort(final Integer port) {
       // differs from default setPort in that 0 resets port to default
       if (port == null) {
         this.port = null;
@@ -2190,8 +2194,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     public static ServerState fromDirectory(final String workingDirectory,
         final String memberName) {
-      ServerState serverState = ((ServerLauncher.Builder)new ServerLauncher.Builder().setWorkingDirectory(workingDirectory))
-          .setDisableDefaultServer(true).build().status();
+      ServerState serverState = ((ServerLauncher.Builder) new ServerLauncher.Builder()
+          .setWorkingDirectory(workingDirectory)).setDisableDefaultServer(true).build().status();
 
       if (ObjectUtils.equals(serverState.getMemberName(), memberName)) {
         return serverState;
@@ -2206,8 +2210,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
           launcher.getWorkingDirectory(), ManagementFactory.getRuntimeMXBean().getInputArguments(),
           System.getProperty("java.class.path"), GemFireVersion.getGemFireVersion(),
           System.getProperty("java.version"), getServerLogFileCanonicalPath(launcher),
-          getBindAddressAsString(launcher), getPortAsString(launcher),
-          launcher.getMemberName());
+          getBindAddressAsString(launcher), getPortAsString(launcher), launcher.getMemberName());
     }
 
     public ServerState(final ServerLauncher launcher, final Status status,

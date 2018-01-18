@@ -62,15 +62,18 @@ public class StatusServerCommand implements GfshCommand {
             .format(CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
       }
     } else {
-      final ServerLauncher serverLauncher = (ServerLauncher)
-	  ((ServerLauncher.Builder)new ServerLauncher.Builder()
-          .setCommand(ServerLauncher.Command.STATUS).setDebug(isDebugging()))
-          // NOTE since we do not know whether the "CacheServer" was enabled or not on the GemFire
-          // server when it was started,
-          // set the disableDefaultServer property in the ServerLauncher.Builder to default status
-          // to the MemberMBean
-          // TODO fix this hack! (how, the 'start server' loop needs it)
-          .setDisableDefaultServer(true).setPid(pid).setWorkingDirectory(workingDirectory).build();
+      final ServerLauncher serverLauncher =
+          (ServerLauncher) ((ServerLauncher.Builder) new ServerLauncher.Builder()
+              .setCommand(ServerLauncher.Command.STATUS).setDebug(isDebugging()))
+                  // NOTE since we do not know whether the "CacheServer" was enabled or not on the
+                  // GemFire
+                  // server when it was started,
+                  // set the disableDefaultServer property in the ServerLauncher.Builder to default
+                  // status
+                  // to the MemberMBean
+                  // TODO fix this hack! (how, the 'start server' loop needs it)
+                  .setDisableDefaultServer(true).setPid(pid).setWorkingDirectory(workingDirectory)
+                  .build();
 
       final ServerLauncher.ServerState status = serverLauncher.status();
 

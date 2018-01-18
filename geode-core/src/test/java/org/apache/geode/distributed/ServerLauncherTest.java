@@ -266,7 +266,8 @@ public class ServerLauncherTest {
     CacheServer cacheServer = mock(CacheServer.class, "CacheServer");
     when(cache.getCacheServers()).thenReturn(Collections.emptyList());
     when(cache.addCacheServer()).thenReturn(cacheServer);
-    ServerLauncher launcher = (ServerLauncher)new Builder().setBindAddress(null).setPort(11235).build();
+    ServerLauncher launcher =
+        (ServerLauncher) new Builder().setBindAddress(null).setPort(11235).build();
 
     launcher.startCacheServer(cache);
 

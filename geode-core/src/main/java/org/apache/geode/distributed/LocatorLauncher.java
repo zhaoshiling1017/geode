@@ -207,7 +207,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @return the LocatorState for this process or null.
    */
   public static LocatorState getLocatorState() {
-    return (LocatorState)(getInstance() != null ? getInstance().status() : null);
+    return (LocatorState) (getInstance() != null ? getInstance().status() : null);
   }
 
   /**
@@ -376,12 +376,11 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return "localhost/127.0.0.1";
     }
   }
- 
+
   /**
    * Gets the host name that clients will use to lookup the running Locator.
    *
-   * @return a String indicating the hostname used by clients to lookup the Loc
-ator.
+   * @return a String indicating the hostname used by clients to lookup the Locator.
    */
   public String getHostNameForClients() {
     return this.hostNameForClients;
@@ -629,13 +628,13 @@ ator.
             statusMessage -> LocatorLauncher.this.statusMessage = statusMessage);
 
         try {
-//<<<<<<< ours
-//          this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
-//              getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients());
-//=======
+          // <<<<<<< ours
+          // this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
+          // getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients());
+          // =======
           this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
               getBindAddress(), true, getDistributedSystemProperties(), getHostNameForClients());
-//>>>>>>> theirs
+          // >>>>>>> theirs
         } finally {
           ProcessLauncherContext.remove();
         }
@@ -679,7 +678,7 @@ ator.
   }
 
   public LocatorState stop() {
-    return (LocatorState)super.stop();
+    return (LocatorState) super.stop();
   }
 
   @Override
@@ -843,7 +842,7 @@ ator.
    * @see org.apache.geode.distributed.LocatorLauncher.LocatorState
    */
   public LocatorState status() {
-    final LocatorLauncher launcher = (LocatorLauncher)getInstance();
+    final LocatorLauncher launcher = (LocatorLauncher) getInstance();
     // if this instance is starting then return local status
     if (this.starting.get()) {
       debug(
@@ -934,7 +933,7 @@ ator.
 
       // note: in-process request will go infinite loop unless we do the following
       if (parsedPid == ProcessUtils.identifyPid()) {
-        LocatorLauncher runningLauncher = (LocatorLauncher)getInstance();
+        LocatorLauncher runningLauncher = (LocatorLauncher) getInstance();
         if (runningLauncher != null) {
           return runningLauncher.status();
         }
@@ -991,8 +990,8 @@ ator.
   }
 
   ProcessController createProcessController() {
-    return new ProcessControllerFactory()
-          .createProcessController(new LocatorControllerParameters(), getPid());
+    return new ProcessControllerFactory().createProcessController(new LocatorControllerParameters(),
+        getPid());
   }
 
   ProcessType getProcessType() {
@@ -1087,7 +1086,7 @@ ator.
     private Boolean loadSharedConfigFromDir;
     private Command command;
 
-    private final static String SERVICE_NAME = "Locator";
+    private static final String SERVICE_NAME = "Locator";
 
     public Builder(final String... args) {
       super(args);
@@ -1242,7 +1241,10 @@ ator.
       return this;
     }
 
-    /* The following methods call the super class but override its method so the correct type can be returned. */
+    /*
+     * The following methods call the super class but override its method so the correct type can be
+     * returned.
+     */
     public Builder setDebug(final Boolean debug) {
       super.setDebug(debug);
       return this;
@@ -1538,8 +1540,8 @@ ator.
 
     public static LocatorState fromDirectory(final String workingDirectory,
         final String memberName) {
-      LocatorState locatorState = (LocatorState)
-          new LocatorLauncher.Builder().setWorkingDirectory(workingDirectory).build().status();
+      LocatorState locatorState = (LocatorState) new LocatorLauncher.Builder()
+          .setWorkingDirectory(workingDirectory).build().status();
 
       if (ObjectUtils.equals(locatorState.getMemberName(), memberName)) {
         return locatorState;

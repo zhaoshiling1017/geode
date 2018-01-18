@@ -31,11 +31,11 @@ import java.net.URL;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.internal.process.ProcessController;
-import org.apache.geode.internal.process.ProcessType;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.process.ProcessController;
+import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -384,16 +384,45 @@ public class AbstractLauncherTest {
       this.memberName = memberName;
     }
 
-    boolean isStoppable() { return false; }
-    ServiceState<String> stopInProcess() { return null; }
-    ServiceState<String> createNoResponseState(final Exception cause, final String msg) { return null; }
-    ServiceState<String> createNotRespondingState() { return null; }
-    ServiceState<String> createStoppedState() { return null; }
-    ProcessController createProcessController() { return null; }
-    ProcessType getProcessType() { return null; }
-    public ServiceState<String> status() { return null; }
-    public Properties getProperties() { return null; }
-    public ServiceState<String> start() { return null; }
+    boolean isStoppable() {
+      return false;
+    }
+
+    ServiceState<String> stopInProcess() {
+      return null;
+    }
+
+    ServiceState<String> createNoResponseState(final Exception cause, final String msg) {
+      return null;
+    }
+
+    ServiceState<String> createNotRespondingState() {
+      return null;
+    }
+
+    ServiceState<String> createStoppedState() {
+      return null;
+    }
+
+    ProcessController createProcessController() {
+      return null;
+    }
+
+    ProcessType getProcessType() {
+      return null;
+    }
+
+    public ServiceState<String> status() {
+      return null;
+    }
+
+    public Properties getProperties() {
+      return null;
+    }
+
+    public ServiceState<String> start() {
+      return null;
+    }
 
     @Override
     public String getLogFileName() {

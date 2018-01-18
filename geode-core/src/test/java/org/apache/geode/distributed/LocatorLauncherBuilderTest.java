@@ -484,13 +484,13 @@ public class LocatorLauncherBuilderTest {
     Builder builder = new Builder();
 
     LocatorLauncher launcher = builder.setCommand(Command.START).setDebug(true)
-//<<<<<<< ours
-//        .setHostnameForClients("beanstock.vmware.com").setMemberName("Beanstock").setPort(8192)
-//        .setRedirectOutput(Boolean.TRUE).build();
-//=======
+        // <<<<<<< ours
+        // .setHostnameForClients("beanstock.vmware.com").setMemberName("Beanstock").setPort(8192)
+        // .setRedirectOutput(Boolean.TRUE).build();
+        // =======
         .setHostNameForClients("beanstock.vmware.com").setMemberName("Beanstock").setPort(8192)
         .build();
-//>>>>>>> theirs
+    // >>>>>>> theirs
 
     assertThat(launcher.getCommand()).isEqualTo(builder.getCommand());
     assertThat(launcher.isDebugging()).isTrue();

@@ -86,8 +86,7 @@ public class StartServerCommandTest {
     expectedCommandLineElements.add("--disable-default-server");
     expectedCommandLineElements.add(serverLauncher.getMemberName().toLowerCase());
     expectedCommandLineElements.add("--rebalance");
-    expectedCommandLineElements
-        .add(String.format("--server-port=%1$d", serverLauncher.getPort()));
+    expectedCommandLineElements.add(String.format("--server-port=%1$d", serverLauncher.getPort()));
     expectedCommandLineElements.add(String.format("--critical-heap-percentage=%1$s",
         serverLauncher.getCriticalHeapPercentage()));
     expectedCommandLineElements.add(String.format("--eviction-heap-percentage=%1$s",
@@ -128,8 +127,7 @@ public class StartServerCommandTest {
     expectedCommandLineElements.add("--disable-default-server");
     expectedCommandLineElements.add(serverLauncher.getMemberName().toLowerCase());
     expectedCommandLineElements.add("--rebalance");
-    expectedCommandLineElements
-        .add(String.format("--server-port=%1$d", serverLauncher.getPort()));
+    expectedCommandLineElements.add(String.format("--server-port=%1$d", serverLauncher.getPort()));
     expectedCommandLineElements.add(String.format("--critical-heap-percentage=%1$s",
         serverLauncher.getCriticalHeapPercentage()));
     expectedCommandLineElements.add(String.format("--eviction-heap-percentage=%1$s",
