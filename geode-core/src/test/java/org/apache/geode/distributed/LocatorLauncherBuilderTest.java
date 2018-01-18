@@ -73,8 +73,8 @@ public class LocatorLauncherBuilderTest {
   }
 
   @Test
-  public void getHostnameForClientsReturnsNullByDefault() throws Exception {
-    assertThat(new Builder().getHostnameForClients()).isNull();
+  public void getHostNameForClientsReturnsNullByDefault() throws Exception {
+    assertThat(new Builder().getHostNameForClients()).isNull();
   }
 
   @Test
@@ -115,7 +115,7 @@ public class LocatorLauncherBuilderTest {
   public void setHostNameForClientsReturnsBuilderInstance() throws Exception {
     Builder builder = new Builder();
 
-    assertThat(builder.setHostnameForClients("Pegasus")).isSameAs(builder);
+    assertThat(builder.setHostNameForClients("Pegasus")).isSameAs(builder);
   }
 
   @Test
@@ -223,30 +223,30 @@ public class LocatorLauncherBuilderTest {
   }
 
   @Test
-  public void setHostnameForClientsToStringUsesValue() throws Exception {
+  public void setHostNameForClientsToStringUsesValue() throws Exception {
     Builder builder = new Builder();
 
-    builder.setHostnameForClients("Pegasus");
+    builder.setHostNameForClients("Pegasus");
 
-    assertThat(builder.getHostnameForClients()).isEqualTo("Pegasus");
+    assertThat(builder.getHostNameForClients()).isEqualTo("Pegasus");
   }
 
   @Test
-  public void setHostnameForClientsToBlankStringThrowsIllegalArgumentException() {
-    assertThatThrownBy(() -> new Builder().setHostnameForClients(" "))
+  public void setHostNameForClientsToBlankStringThrowsIllegalArgumentException() {
+    assertThatThrownBy(() -> new Builder().setHostNameForClients(" "))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setHostnameForClientsToEmptyStringThrowsIllegalArgumentException() {
-    assertThatThrownBy(() -> new Builder().setHostnameForClients(""))
+  public void setHostNameForClientsToEmptyStringThrowsIllegalArgumentException() {
+    assertThatThrownBy(() -> new Builder().setHostNameForClients(""))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
 
-  public void setHostnameForClientsToNullThrowsIllegalArgumentException() {
-    assertThatThrownBy(() -> new Builder().setHostnameForClients(null))
+  public void setHostNameForClientsToNullThrowsIllegalArgumentException() {
+    assertThatThrownBy(() -> new Builder().setHostNameForClients(null))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -484,12 +484,17 @@ public class LocatorLauncherBuilderTest {
     Builder builder = new Builder();
 
     LocatorLauncher launcher = builder.setCommand(Command.START).setDebug(true)
-        .setHostnameForClients("beanstock.vmware.com").setMemberName("Beanstock").setPort(8192)
-        .setRedirectOutput(Boolean.TRUE).build();
+//<<<<<<< ours
+//        .setHostnameForClients("beanstock.vmware.com").setMemberName("Beanstock").setPort(8192)
+//        .setRedirectOutput(Boolean.TRUE).build();
+//=======
+        .setHostNameForClients("beanstock.vmware.com").setMemberName("Beanstock").setPort(8192)
+        .build();
+//>>>>>>> theirs
 
     assertThat(launcher.getCommand()).isEqualTo(builder.getCommand());
     assertThat(launcher.isDebugging()).isTrue();
-    assertThat(launcher.getHostnameForClients()).isEqualTo(builder.getHostnameForClients());
+    assertThat(launcher.getHostNameForClients()).isEqualTo(builder.getHostNameForClients());
     assertThat(launcher.getMemberName()).isEqualTo(builder.getMemberName());
     assertThat(launcher.getPort()).isEqualTo(builder.getPort());
     assertThat(launcher.getWorkingDirectory()).isEqualTo(builder.getWorkingDirectory());

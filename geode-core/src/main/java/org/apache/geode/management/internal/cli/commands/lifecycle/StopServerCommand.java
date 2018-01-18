@@ -72,7 +72,7 @@ public class StopServerCommand implements GfshCommand {
       }
 
     } else {
-      final ServerLauncher serverLauncher =
+      final ServerLauncher serverLauncher = (ServerLauncher)
           new ServerLauncher.Builder().setCommand(ServerLauncher.Command.STOP)
               .setDebug(isDebugging()).setPid(pid).setWorkingDirectory(workingDirectory).build();
 

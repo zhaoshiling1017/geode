@@ -71,7 +71,7 @@ public class StartServerCommandTest {
   public void testCreateServerCommandLine() throws Exception {
     ServerLauncher serverLauncher = new ServerLauncher.Builder()
         .setCommand(ServerLauncher.Command.START).setDisableDefaultServer(true)
-        .setMemberName("testCreateServerCommandLine").setRebalance(true).setServerPort(41214)
+        .setMemberName("testCreateServerCommandLine").setRebalance(true).setPort(41214)
         .setCriticalHeapPercentage(95.5f).setEvictionHeapPercentage(85.0f)
         .setSocketBufferSize(1024 * 1024).setMessageTimeToLive(93).build();
 
@@ -87,7 +87,7 @@ public class StartServerCommandTest {
     expectedCommandLineElements.add(serverLauncher.getMemberName().toLowerCase());
     expectedCommandLineElements.add("--rebalance");
     expectedCommandLineElements
-        .add(String.format("--server-port=%1$d", serverLauncher.getServerPort()));
+        .add(String.format("--server-port=%1$d", serverLauncher.getPort()));
     expectedCommandLineElements.add(String.format("--critical-heap-percentage=%1$s",
         serverLauncher.getCriticalHeapPercentage()));
     expectedCommandLineElements.add(String.format("--eviction-heap-percentage=%1$s",
@@ -108,7 +108,7 @@ public class StartServerCommandTest {
   public void testCreateServerCommandLineWithRestAPI() throws Exception {
     ServerLauncher serverLauncher = new ServerLauncher.Builder()
         .setCommand(ServerLauncher.Command.START).setDisableDefaultServer(true)
-        .setMemberName("testCreateServerCommandLine").setRebalance(true).setServerPort(41214)
+        .setMemberName("testCreateServerCommandLine").setRebalance(true).setPort(41214)
         .setCriticalHeapPercentage(95.5f).setEvictionHeapPercentage(85.0f).build();
 
     Properties gemfireProperties = new Properties();
@@ -129,7 +129,7 @@ public class StartServerCommandTest {
     expectedCommandLineElements.add(serverLauncher.getMemberName().toLowerCase());
     expectedCommandLineElements.add("--rebalance");
     expectedCommandLineElements
-        .add(String.format("--server-port=%1$d", serverLauncher.getServerPort()));
+        .add(String.format("--server-port=%1$d", serverLauncher.getPort()));
     expectedCommandLineElements.add(String.format("--critical-heap-percentage=%1$s",
         serverLauncher.getCriticalHeapPercentage()));
     expectedCommandLineElements.add(String.format("--eviction-heap-percentage=%1$s",

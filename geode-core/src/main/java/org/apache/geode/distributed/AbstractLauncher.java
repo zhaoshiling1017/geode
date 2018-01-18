@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.commons.lang.StringUtils.defaultIfBlank;
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.commons.lang.StringUtils.lowerCase;
@@ -22,13 +24,16 @@ import static org.apache.geode.internal.lang.ClassUtils.forName;
 import static org.apache.geode.internal.lang.ObjectUtils.defaultIfNull;
 import static org.apache.geode.internal.lang.StringUtils.defaultString;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
+import static org.apache.geode.internal.util.IOUtils.tryGetCanonicalPathElseGetAbsolutePath;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.BindException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Timestamp;
@@ -40,7 +45,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -50,8 +57,16 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.process.ConnectionFailedException;
+import org.apache.geode.internal.process.MBeanInvocationFailedException;
 import org.apache.geode.internal.process.PidUnavailableException;
+import org.apache.geode.internal.process.ProcessController;
+import org.apache.geode.internal.process.ProcessControllerFactory;
+import org.apache.geode.internal.process.ProcessControllerParameters;
+import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.SunAPINotFoundException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
@@ -88,8 +103,24 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   protected final transient AtomicBoolean running = new AtomicBoolean(false);
 
+  ProcessControllerParameters controllerParameters;
+
+  private static final AtomicReference<AbstractLauncher> INSTANCE = new AtomicReference<>();
+
   // TODO: use log4j logger instead of JUL
   protected Logger logger = Logger.getLogger(getClass().getName());
+
+  /**
+   * Gets the instance of the AbstractLauncher used to launch the GemFire service, or null if this VM
+   * does not have an instance of AbstractLauncher indicating no GemFire service is running.
+   *
+   * @return the instance of AbstractLauncher used to launcher a GemFire service in this VM.
+   */
+  public static AbstractLauncher getInstance() {
+    return INSTANCE.get();
+  }
+
+  abstract public Properties getProperties(); // TODO: GEODE-3584
 
   public AbstractLauncher() {
     try {
@@ -182,9 +213,9 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   }
 
   /**
-   * Determines whether the Locator launcher is in debug mode.
+   * Determines whether the launcher is in debug mode.
    *
-   * @return a boolean to indicate whether the Locator launcher is in debug mode.
+   * @return a boolean to indicate whether the launcher is in debug mode.
    * @see #setDebug(boolean)
    */
   public boolean isDebugging() {
@@ -203,9 +234,9 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   }
 
   /**
-   * Determines whether the Locator referenced by this launcher is running.
+   * Determines whether the service referenced by this launcher is running.
    *
-   * @return a boolean valued indicating if the referenced Locator is running.
+   * @return a boolean valued indicating if the referenced service is running.
    */
   public boolean isRunning() {
     return this.running.get();
@@ -413,6 +444,134 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   }
 
   /**
+   * Attempts to determine the state of the service. 
+   */
+  abstract public ServiceState<T> status();
+
+  abstract boolean isStoppable();
+
+  abstract ServiceState<T> stopInProcess();
+
+  abstract public ServiceState<T> start();
+
+  ServiceState<T> stopWithPid() {
+    try {
+      final ProcessController controller = createProcessController();
+      controller.checkPidSupport();
+      controller.stop();
+      return createStoppedState();
+    } catch (ConnectionFailedException handled) {
+      // failed to attach to locator JVM
+      return createNoResponseState(handled,
+          "Failed to connect to locator with process id " + getPid());
+    } catch (IOException | MBeanInvocationFailedException
+        | UnableToControlProcessException handled) {
+      return createNoResponseState(handled,
+          "Failed to communicate with locator with process id " + getPid());
+    }
+  }
+
+  /**
+   * Stop shuts the running service down. Using the API, the service is requested to stop by calling
+   * the service object's 'stop' method. Internally, this method is no different than using the
+   * AbstractLauncher class from the command-line or from within GemFire shell (Gfsh). In every
+   * single case, stop sends a TCP/IP 'shutdown' request on the configured address/port to which the
+   * service is bound and listening.
+   *
+   * If the "shutdown" request is successful, then the service will be 'STOPPED'. Otherwise, the
+   * service is considered 'OFFLINE' since the actual state cannot be fully assessed (as in the
+   * application process in which the service was hosted may still be running and the service object
+   * may still exist even though it is no longer responding to location-based requests). The later
+   * is particularly important in cases where the system resources (such as Sockets) may not have
+   * been cleaned up yet. Therefore, by returning a status of 'OFFLINE', the value is meant to
+   * reflect this in-deterministic state.
+   *
+   * @return a ServiceState indicating the state of the service after stop has been requested.
+   * @see #start()
+   * @see #status()
+   * @see org.apache.geode.distributed.AbstractLauncher.ServiceState
+   * @see org.apache.geode.distributed.AbstractLauncher.Status#NOT_RESPONDING
+   * @see org.apache.geode.distributed.AbstractLauncher.Status#STOPPED
+   */
+  public ServiceState<T> stop() {
+    final AbstractLauncher launcher = getInstance();
+    // if this instance is running then stop it
+    if (isStoppable()) {
+      return stopInProcess();
+    }
+    // if in-process but difference instance of LocatorLauncher
+    else if (isPidInProcess() && launcher != null) {
+      return launcher.stopInProcess();
+    }
+    // attempt to stop Locator using pid...
+    else if (getPid() != null) {
+      return stopWithPid();
+    }
+    // attempt to stop Locator using the working directory...
+    else if (getWorkingDirectory() != null) {
+      return stopWithWorkingDirectory();
+    } else {
+      return createNotRespondingState();
+    }
+  }
+
+  ServiceState<T> stopWithWorkingDirectory() {
+    int parsedPid = 0;
+    ProcessType pt = getProcessType();
+    try {
+      final ProcessController controller =
+          new ProcessControllerFactory().createProcessController(this.controllerParameters,
+              new File(getWorkingDirectory()), pt.getPidFileName());
+      parsedPid = controller.getProcessId();
+
+      // NOTE in-process request will go infinite loop unless we do the following
+      if (parsedPid == identifyPid()) {
+        final AbstractLauncher runningLauncher = getInstance();
+        if (runningLauncher != null) {
+          return runningLauncher.stopInProcess();
+        }
+      }
+
+      controller.stop();
+      return createStoppedState();
+    } catch (ConnectionFailedException handled) {
+      // failed to attach to server JVM
+      return createNoResponseState(handled,
+          "Failed to connect to service with process id " + parsedPid);
+    } catch (FileNotFoundException handled) {
+      // could not find pid file
+      return createNoResponseState(handled, "Failed to find process file "
+          + pt.getPidFileName() + " in " + getWorkingDirectory());
+    } catch (IOException | MBeanInvocationFailedException
+        | UnableToControlProcessException handled) {
+      return createNoResponseState(handled,
+          "Failed to communicate with service with process id " + parsedPid);
+    } catch (InterruptedException handled) {
+      Thread.currentThread().interrupt();
+      return createNoResponseState(handled,
+          "Interrupted while trying to communicate with service with process id " + parsedPid);
+    } catch (PidUnavailableException handled) {
+      // couldn't determine pid from within server JVM
+      return createNoResponseState(handled, "Failed to find usable process id within file "
+          + pt.getPidFileName() + " in " + getWorkingDirectory());
+    } catch (TimeoutException handled) {
+      return createNoResponseState(handled,
+          "Timed out trying to find usable process id within file "
+              + pt.getPidFileName() + " in " + getWorkingDirectory());
+    }
+  }
+
+  abstract ServiceState<T> createNoResponseState(final Exception cause, final String msg);
+
+  abstract ServiceState<T> createNotRespondingState();
+
+  abstract ServiceState<T> createStoppedState();
+
+  abstract ProcessController createProcessController();
+
+  abstract ProcessType getProcessType();
+
+  /**
    * Gets the version of GemFire currently running.
    *
    * @return a String representation of GemFire's version.
@@ -439,8 +598,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   }
 
   /**
-   * The ServiceState is an immutable type representing the state of the specified Locator at any
-   * given moment in time. The ServiceState associates the Locator with it's state at the exact
+   * The ServiceState is an immutable type representing the state of the specified service at any
+   * given moment in time. The ServiceState associates the service with it's state at the exact
    * moment an instance of this class is constructed.
    */
   public abstract static class ServiceState<T extends Comparable<T>> {
@@ -824,7 +983,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     /**
      * Looks up the Status enum type by description. The lookup operation is case-insensitive.
      *
-     * @param description a String value describing the Locator's status.
+     * @param description a String value describing the service's status.
      * @return a Status enumerated type matching the description.
      */
     public static Status valueOfDescription(final String description) {
@@ -858,4 +1017,606 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     }
   }
 
+  /**
+   * Following the Builder design pattern, the AbstractLauncher Builder is used to configure and
+   * create a properly initialized instance of a subclass of AbstractLauncher class for running
+   * the Launcher and performing other Launcher operations.
+   */
+  public abstract static class Builder {
+
+    /* protected static final Command DEFAULT_COMMAND = Command.UNSPECIFIED;
+     * GEODE-3584: Command is an enumeration that has to be refactored as well */
+
+    private Boolean debug;
+    private Boolean deletePidFileOnStop;
+    private Boolean force;
+    private Boolean help;
+    private Boolean redirectOutput;
+    /* private Command command; // GEODE-3584; see above */
+
+    private InetAddress bindAddress;
+    private boolean bindAddressSetByUser;
+
+    private Integer pid;
+    protected Integer port;
+
+    private final Properties distributedSystemProperties = new Properties();
+
+    private String hostNameForClients;
+    private String memberName;
+    protected String workingDirectory;
+    private static final String SERVICE_NAME = "Service";
+    // should always be overridden by subclass
+
+    /**
+     * Default constructor used to create an instance of the Builder class for programmatical
+     * access.
+     */
+    public Builder() {}
+
+    /**
+     * Constructor used to create and configure an instance of the Builder class with the specified
+     * arguments, often passed from the command-line when launching an instance of this class from
+     * the command-line using the Java launcher.
+     *
+     * @param args the array of arguments used to configure the Builder.
+     */
+    public Builder(final String... args) {
+      parseArguments(args != null ? args : new String[0]);
+    }
+
+    abstract protected void parseArguments(final String... args);
+
+    /**
+     * Iterates the list of arguments in search of the target launcher command.
+     *
+     * @param args an array of arguments from which to search for the service launcher command.
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#valueOfName(String)
+     * @see #parseArguments(String...)
+     */
+    abstract protected void parseCommand(final String... args); // TODO
+    /** GEODE-3584: Command needs refactoring as well
+    protected void parseCommand(final String... args) {
+      // search the list of arguments for the command; technically, the command should be the first
+      // argument in the
+      // list, but does it really matter? stop after we find one valid command.
+      if (args != null) {
+        for (String arg : args) {
+          final Command command = Command.valueOfName(arg);
+          if (command != null) {
+            setCommand(command);
+            break;
+          }
+        }
+      }
+    }
+    */
+
+    /**
+     * Iterates the list of arguments in search of the Launcher's GemFire member name. If the
+     * argument does not start with '-' or is not the name of a Launcher launcher command, then the
+     * value is presumed to be the member name for the Launcher in GemFire.
+     *
+     * @param args the array of arguments from which to search for the Launcher's member name in
+     *        GemFire.
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#isCommand(String)
+     * @see #parseArguments(String...)
+     */
+    abstract protected void parseMemberName(final String... args); // TODO: GEODE-3584
+    /** GEODE-3584: Command needs refactoring as well
+    protected void parseMemberName(final String... args) {
+      if (args != null) {
+        for (String arg : args) {
+          if (!(arg.startsWith(OPTION_PREFIX) || Command.isCommand(arg))) {
+            setMemberName(arg);
+            break;
+          }
+        }
+      }
+    }
+    */
+
+    /** TODO: GEODE-3584
+     * Gets the launcher command used during the invocation of the AbstractLauncher.
+     *
+     * @return the launcher command used to invoke (run) the AbstractLauncher class.
+     * @see #setCommand(org.apache.geode.distributed.AbstractLauncher.Command)
+     * @see AbstractLauncher.Command
+     */
+    /** TODO: GEODE-3584 // Command is an enumeration that needs refactoring
+    public Command getCommand() {
+      return defaultIfNull(this.command, DEFAULT_COMMAND);
+    } */
+
+    /**
+     * Sets the launcher command used during the invocation of the subclass of AbstractLauncher
+     *
+     * @param command the targeted launcher command used during the invocation (run) of
+     *        AbstractLauncher.
+     * @return this Builder instance.
+     * @see #getCommand()
+     * @see AbstractLauncher.Command
+     */
+    /** TODO: GEODE-3584 // Command is an enumeration that needs refactoring
+    public Builder setCommand(final Command command) {
+      this.command = command;
+      return this;
+    } */
+
+    /**
+     * Determines whether the new instance of the AbstractLauncher will be set to debug mode.
+     *
+     * @return a boolean value indicating whether debug mode is enabled or disabled.
+     * @see #setDebug(Boolean)
+     */
+    public Boolean getDebug() {
+      return this.debug;
+    }
+
+    /**
+     * Sets whether the new instance of the AbstractLauncher will be set to debug mode.
+     *
+     * @param debug a boolean value indicating whether debug mode is to be enabled or disabled.
+     * @return this Builder instance.
+     * @see #getDebug()
+     */
+    public Builder setDebug(final Boolean debug) {
+      this.debug = debug;
+      return this;
+    }
+
+    /**
+     * Determines whether the Geode service should delete the pid file when its service stops or
+     * when the JVM exits.
+     *
+     * @return a boolean value indicating if the pid file should be deleted when this service stops
+     *         or when the JVM exits.
+     * @see #setDeletePidFileOnStop(Boolean)
+     */
+    public Boolean getDeletePidFileOnStop() {
+      return this.deletePidFileOnStop;
+    }
+
+    /**
+     * Sets whether the Geode service should delete the pid file when its service stops or when the
+     * JVM exits.
+     *
+     * @param deletePidFileOnStop a boolean value indicating if the pid file should be deleted when
+     *        this service stops or when the JVM exits.
+     * @return this Builder instance.
+     * @see #getDeletePidFileOnStop()
+     */
+    public Builder setDeletePidFileOnStop(final Boolean deletePidFileOnStop) {
+      this.deletePidFileOnStop = deletePidFileOnStop;
+      return this;
+    }
+
+    /**
+     * Gets the GemFire Distributed System (cluster) Properties configuration.
+     *
+     * @return a Properties object containing configuration settings for the GemFire Distributed
+     *         System (cluster).
+     * @see java.util.Properties
+     */
+    public Properties getDistributedSystemProperties() {
+      return this.distributedSystemProperties;
+    }
+
+    /**
+     * Gets the boolean value used by the service to determine if it should overwrite the PID file
+     * if it already exists.
+     *
+     * @return the boolean value specifying whether or not to overwrite the PID file if it already
+     *         exists.
+     * @see #setForce(Boolean)
+     */
+    public Boolean getForce() {
+      return defaultIfNull(this.force, DEFAULT_FORCE);
+    }
+
+    /**
+     * Sets the boolean value used by the service to determine if it should overwrite the PID file
+     * if it already exists.
+     *
+     * @param force a boolean value indicating whether to overwrite the PID file when it already
+     *        exists.
+     * @return this Builder instance.
+     * @see #getForce()
+     */
+    public Builder setForce(final Boolean force) {
+      this.force = force;
+      return this;
+    }
+
+    /**
+     * Determines whether the new instance of AbstractLauncher will be used to output help
+     * information for either a specific command, or for using AbstractLauncher in general.
+     *
+     * @return a boolean value indicating whether help will be output during the invocation of
+     *         AbstractLauncher.
+     * @see #setHelp(Boolean)
+     */
+    public Boolean getHelp() {
+      return this.help;
+    }
+
+    /**
+     * Determines whether help has been enabled.
+     *
+     * @return a boolean indicating if help was enabled.
+     */
+    boolean isHelping() {
+      return Boolean.TRUE.equals(getHelp());
+    }
+
+    /**
+     * Sets whether the new instance of AbstractLauncher will be used to output help information for
+     * either a specific command, or for using AbstractLauncher in general.
+     *
+     * @param help a boolean indicating whether help information is to be displayed during
+     *        invocation of AbstractLauncher.
+     * @return this Builder instance.
+     * @see #getHelp()
+     */
+    public Builder setHelp(final Boolean help) {
+      this.help = help;
+      return this;
+    }
+
+    /** GEODE-3584: This is similar to isServerBindAddressByUser in ServerLauncher */
+    /**
+    boolean isBindAddressSpecified() {
+      return (getBindAddress() != null);
+
+    }*/
+
+    /**
+     * Gets the IP address to which the service has bound itself listening for client requests.
+     *
+     * @return an InetAddress with the IP address or host name on which the service is bound and
+     *         listening.
+     * @see #setBindAddress(String)
+     * @see java.net.InetAddress
+     */
+    public InetAddress getBindAddress() {
+      return this.bindAddress;
+    }
+
+    /**
+     * Sets the IP address as an java.net.InetAddress to which the service has bound itself
+     * listening for client requests.
+     *
+     * @param bindAddress the InetAddress with the IP address or host name on which the service is
+     *        bound and listening.
+     * @return this Builder instance.
+     * @throws IllegalArgumentException wrapping the UnknownHostException if the IP address or
+     *         host name for the bind address is unknown.
+     * @see #getBindAddress()
+     * @see java.net.InetAddress
+     */
+    public Builder setBindAddress(final String bindAddress) {
+      if (isBlank(bindAddress)) {
+        this.bindAddress = null;
+        return this;
+      }
+        // NOTE only set the 'bind address' if the user specified a value
+        else {
+        try {
+          InetAddress address = InetAddress.getByName(bindAddress);
+          if (SocketCreator.isLocalHost(address)) {
+            this.bindAddress = address;
+            this.bindAddressSetByUser = true;
+            return this;
+          } else {
+            throw new IllegalArgumentException(
+                bindAddress + " is not an address for this machine.");
+          }
+        } catch (UnknownHostException e) {
+          throw new IllegalArgumentException(
+              LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE
+                  .toLocalizedString(SERVICE_NAME),
+              e);
+        }
+      }
+    }
+
+    boolean isBindAddressSetByUser() {
+      return this.bindAddressSetByUser;
+    }
+
+    /**
+     * Gets the host name used by clients to lookup the service.
+     *
+     * @return a String indicating the host name service binding used in client lookups.
+     * @see #setHostNameForClients(String)
+     */
+    public String getHostNameForClients() {
+      return this.hostNameForClients;
+    }
+
+    /**
+     * Sets the host name used by clients to lookup the Launcher.
+     *
+     * @param hostNameForClients a String indicating the host name Launcher binding used in client
+     *        lookups.
+     * @return this Builder instance.
+     * @throws IllegalArgumentException if the host name was not specified (is blank or empty), such
+     *         as when the --hostname-for-clients command-line option may have been specified
+     *         without any argument.
+     * @see #getHostNameForClients()
+     */
+    public Builder setHostNameForClients(final String hostNameForClients) {
+      if (isBlank(hostNameForClients)) {
+        throw new IllegalArgumentException(
+            LocalizedStrings.LocatorLauncher_Builder_INVALID_HOSTNAME_FOR_CLIENTS_ERROR_MESSAGE
+                .toLocalizedString());
+      }
+      this.hostNameForClients = hostNameForClients;
+      return this;
+    }
+
+    /**
+     * Gets the member name of this service in GemFire.
+     *
+     * @return a String indicating the member name of this service in GemFire.
+     * @see #setMemberName(String)
+     */
+    public String getMemberName() {
+      return this.memberName;
+    }
+
+    /**
+     * Sets the member name of the service in GemFire.
+     *
+     * @param memberName a String indicating the member name of this service in GemFire.
+     * @return this Builder instance.
+     * @throws IllegalArgumentException if the member name is invalid.
+     * @see #getMemberName()
+     */
+    public Builder setMemberName(final String memberName) {
+      if (isBlank(memberName)) {
+        throw new IllegalArgumentException(
+            LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE
+                .toLocalizedString(SERVICE_NAME));
+      }
+      this.memberName = memberName;
+      return this;
+    }
+
+    /**
+     * Gets the process ID (PID) of the running service indicated by the user as an argument to the
+     * AbstractLauncher. This PID is used by the launcher to determine the service's status,
+     * or invoke shutdown on the Launcher.
+     *
+     * @return a user specified Integer value indicating the process ID of the running Launcher.
+     * @see #setPid(Integer)
+     */
+    public Integer getPid() {
+      return this.pid;
+    }
+
+    /**
+     * Sets the process ID (PID) of the running Launcher indicated by the user as an argument to the
+     * AbstractLauncher. This PID will be used by the Launcher launcher to determine the Launcher's
+     * status, or invoke shutdown on the Launcher.
+     *
+     * @param pid a user specified Integer value indicating the process ID of the running Launcher.
+     * @return this Builder instance.
+     * @throws IllegalArgumentException if the process ID (PID) is not valid (greater than zero if
+     *         not null).
+     * @see #getPid()
+     */
+    public Builder setPid(final Integer pid) {
+      if (pid != null && pid < 0) {
+        throw new IllegalArgumentException(
+            LocalizedStrings.Launcher_Builder_PID_ERROR_MESSAGE.toLocalizedString());
+      }
+      this.pid = pid;
+      return this;
+    }
+
+    /**
+     * Gets the port number used by the service to listen for client requests. If the port was not
+     * specified, then the default service port (10334) is returned.
+     *
+     * @return the specified service port or the default port if unspecified.
+     * @see #setPort(Integer)
+     */
+    abstract public Integer getPort();
+
+    /**
+     * Sets the port number used by the service to listen for client requests. The port number must
+     * be between 1 and 65535 inclusive.
+     *
+     * @param port an Integer value indicating the port used by the service to listen for client
+     *        requests.
+     * @return this Builder instance.
+     * @throws IllegalArgumentException if the port number is not valid.
+     * @see #getPort()
+     */
+    public Builder setPort(final Integer port) {
+      // NOTE if the user were to specify a port number of 0, then java.net.ServerSocket will pick
+      // an ephemeral port
+      // to bind the socket, which we do not want.
+      if (port != null && (port < 0 || port > 65535)) {
+        throw new IllegalArgumentException(
+            LocalizedStrings.Launcher_Builder_INVALID_PORT_ERROR_MESSAGE
+                .toLocalizedString(SERVICE_NAME));
+      }
+      this.port = port;
+      return this;
+    }
+
+    /**
+     * Determines whether the new instance of AbstractLauncher will redirect output to system logs
+     * when starting a service.
+     *
+     * @return a boolean value indicating if output will be redirected to system logs when starting
+     *         a service
+     * @see #setRedirectOutput(Boolean)
+     */
+    public Boolean getRedirectOutput() {
+      return this.redirectOutput;
+    }
+
+    /**
+     * Determines whether redirecting of output has been enabled.
+     *
+     * @return a boolean indicating if redirecting of output was enabled.
+     */
+    private boolean isRedirectingOutput() {
+      return Boolean.TRUE.equals(getRedirectOutput());
+    }
+
+    /**
+     * Sets whether the new instance of AbstractLauncher will redirect output to system logs when
+     * starting a service.
+     *
+     * @param redirectOutput a boolean value indicating if output will be redirected to system logs
+     *        when starting a service.
+     * @return this Builder instance.
+     * @see #getRedirectOutput()
+     */
+    public Builder setRedirectOutput(final Boolean redirectOutput) {
+      this.redirectOutput = redirectOutput;
+      return this;
+    }
+
+    boolean isWorkingDirectorySpecified() {
+      return isNotBlank(this.workingDirectory);
+    }
+
+    /**
+     * Gets the working directory pathname in which the service will be ran. If the directory is
+     * unspecified, then working directory defaults to the current directory.
+     *
+     * @return a String indicating the working directory pathname.
+     * @see #setWorkingDirectory(String)
+     */
+    public String getWorkingDirectory() {
+      return tryGetCanonicalPathElseGetAbsolutePath(
+          new File(defaultIfBlank(this.workingDirectory, DEFAULT_WORKING_DIRECTORY)));
+    }
+
+    /**
+     * Sets the working directory in which the service will be ran. This also the directory in which
+     * all service's files (such as log and license files) will be written. If the directory is
+     * unspecified, then the working directory defaults to the current directory.
+     *
+     * @param workingDirectory a String indicating the pathname of the directory in which the
+     *        service will be ran.
+     * @return this Builder instance.
+     * @throws IllegalArgumentException wrapping a FileNotFoundException if the working directory
+     *         pathname cannot be found.
+     * @see #getWorkingDirectory()
+     * @see java.io.FileNotFoundException
+     */
+    public Builder setWorkingDirectory(final String workingDirectory) {
+      if (!new File(defaultIfBlank(workingDirectory, DEFAULT_WORKING_DIRECTORY)).isDirectory()) {
+        throw new IllegalArgumentException(
+            LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE
+                .toLocalizedString(SERVICE_NAME),
+            new FileNotFoundException(workingDirectory));
+      }
+      this.workingDirectory = workingDirectory;
+      return this;
+    }
+
+    /**
+     * Sets a GemFire Distributed System Property.
+     *
+     * @param propertyName a String indicating the name of the GemFire Distributed System property
+     *        as described in {@link ConfigurationProperties}
+     * @param propertyValue a String value for the GemFire Distributed System property.
+     * @return this Builder instance.
+     */
+    public Builder set(final String propertyName, final String propertyValue) {
+      this.distributedSystemProperties.setProperty(propertyName, propertyValue);
+      return this;
+    }
+
+    /**
+     * Validates the configuration settings and properties of this Builder, ensuring that all
+     * invariants have been met. Currently, the only invariant constraining the Builder is that the
+     * user must specify the member name for the service in the GemFire distributed system as a
+     * command-line argument, or by setting the memberName property programmatically using the
+     * corresponding setter method. If the member name is not given, then the user must have
+     * specified the pathname to the gemfire.properties file before validate is called. It is then
+     * assumed, but not further validated, that the user has specified the service's member name in
+     * the properties file.
+     *
+     * @throws IllegalStateException if the Builder is not properly configured.
+     */
+    protected void validate() {
+      if (!isHelping()) {
+        validateOnStart();
+        validateOnStatus();
+        validateOnStop();
+        // no validation for 'version' required
+      }
+    }
+
+    /**
+     * Validates the arguments passed to the Builder when the 'start' command has been issued.
+     *
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#START
+     */
+    abstract protected void validateOnStart();
+    /** GEODE-3584: Command needs to be refactored
+    protected void validateOnStart() {
+      if (Command.START == getCommand()) {
+        if (isBlank(getMemberName())
+            && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + NAME)
+            && !isSet(getDistributedSystemProperties(), NAME)
+            && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), NAME)) {
+          throw new IllegalStateException(
+              LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
+                  .toLocalizedString(SERVICE_NAME));
+        }
+
+        if (!CURRENT_DIRECTORY.equals(getWorkingDirectory())) {
+          throw new IllegalStateException(
+              LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
+                  .toLocalizedString(SERVICE_NAME));
+        }
+      }
+    }
+    */
+
+    /**
+     * Validates the arguments passed to the Builder when the 'status' command has been issued.
+     *
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#STATUS
+     */
+    abstract protected void validateOnStatus();
+    /** GEODE-3584: Command needs to be refactored
+    protected void validateOnStatus() {
+      if (Command.STATUS == getCommand()) {
+      }
+    }
+    */
+
+    /**
+     * Validates the arguments passed to the Builder when the 'stop' command has been issued.
+     *
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#STOP
+     */
+    abstract protected void validateOnStop();
+    /** GEODE-3584: Command needs to be refactored
+    protected void validateOnStop() {
+      if (Command.STOP == getCommand()) {
+      }
+    }
+    */
+
+    /**
+     * Validates the Builder configuration settings and then constructs an instance of the
+     * service class to invoke operations on a GemFire service.
+     *
+     * @return a newly constructed instance of service configured with this Builder.
+     * @see #validate()
+     * @see org.apache.geode.distributed.AbstractLauncher
+     */
+    abstract public AbstractLauncher build();
+  }
 }

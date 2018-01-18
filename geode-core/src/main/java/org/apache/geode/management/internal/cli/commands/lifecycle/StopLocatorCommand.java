@@ -78,7 +78,7 @@ public class StopLocatorCommand implements GfshCommand {
             .format(CliStrings.STOP_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, LOCATOR_TERM_NAME));
       }
     } else {
-      final LocatorLauncher locatorLauncher =
+      final LocatorLauncher locatorLauncher = (LocatorLauncher)
           new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.STOP)
               .setDebug(isDebugging()).setPid(pid).setWorkingDirectory(workingDirectory).build();
 

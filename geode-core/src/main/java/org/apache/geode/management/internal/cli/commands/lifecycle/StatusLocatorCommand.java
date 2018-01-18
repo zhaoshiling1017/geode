@@ -70,7 +70,7 @@ public class StatusLocatorCommand implements GfshCommand {
             CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, LOCATOR_TERM_NAME));
       }
     } else {
-      final LocatorLauncher locatorLauncher =
+      final LocatorLauncher locatorLauncher = (LocatorLauncher)
           new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.STATUS)
               .setBindAddress(locatorHost).setDebug(isDebugging()).setPid(pid).setPort(locatorPort)
               .setWorkingDirectory(workingDirectory).build();

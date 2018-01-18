@@ -275,11 +275,22 @@ public class StartServerCommand implements GfshCommand {
       gemfireProperties.setProperty(ResourceConstants.PASSWORD, passwordToUse);
     }
 
-    ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder()
+//<<<<<<< ours
+//    ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder()
+//=======
+    // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH
+    // argument
+    final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
+
+    ServerLauncher.Builder serverLauncherBuilder = (ServerLauncher.Builder)
+	((ServerLauncher.Builder)
+	((ServerLauncher.Builder)
+	((ServerLauncher.Builder)new ServerLauncher.Builder()
+//>>>>>>> theirs
         .setAssignBuckets(assignBuckets).setDisableDefaultServer(disableDefaultServer)
-        .setForce(force).setRebalance(rebalance).setRedirectOutput(redirectOutput)
-        .setServerBindAddress(serverBindAddress).setServerPort(serverPort)
-        .setSpringXmlLocation(springXmlLocation).setWorkingDirectory(workingDirectory)
+        .setForce(force)).setRebalance(rebalance).setRedirectOutput(redirectOutput)
+        .setBindAddress(serverBindAddress).setPort(serverPort))
+        .setSpringXmlLocation(springXmlLocation).setWorkingDirectory(workingDirectory))
         .setCriticalHeapPercentage(criticalHeapPercentage)
         .setEvictionHeapPercentage(evictionHeapPercentage)
         .setCriticalOffHeapPercentage(criticalOffHeapPercentage)
@@ -459,13 +470,13 @@ public class StartServerCommand implements GfshCommand {
       commandLine.add("--redirect-output");
     }
 
-    if (launcher.getServerBindAddress() != null) {
+    if (launcher.getBindAddress() != null) {
       commandLine
-          .add("--server-bind-address=" + launcher.getServerBindAddress().getCanonicalHostName());
+          .add("--server-bind-address=" + launcher.getBindAddress().getCanonicalHostName());
     }
 
-    if (launcher.getServerPort() != null) {
-      commandLine.add("--server-port=" + launcher.getServerPort());
+    if (launcher.getPort() != null) {
+      commandLine.add("--server-port=" + launcher.getPort());
     }
 
     if (launcher.isSpringXmlLocationSpecified()) {

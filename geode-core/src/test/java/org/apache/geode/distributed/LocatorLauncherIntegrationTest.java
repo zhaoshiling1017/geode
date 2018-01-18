@@ -116,7 +116,7 @@ public class LocatorLauncherIntegrationTest {
     assertThat(builder.getBindAddress()).isEqualTo(InetAddress.getLocalHost());
     assertThat(builder.getDebug()).isTrue();
     assertThat(builder.getForce()).isTrue();
-    assertThat(builder.getHostnameForClients()).isEqualTo("Tucows");
+    assertThat(builder.getHostNameForClients()).isEqualTo("Tucows");
     assertThat(builder.getPid().intValue()).isEqualTo(1234);
     assertThat(builder.getPort().intValue()).isEqualTo(11235);
     assertThat(builder.getRedirectOutput()).isTrue();
@@ -138,7 +138,7 @@ public class LocatorLauncherIntegrationTest {
     assertThat(builder.getDebug()).isFalse();
     assertThat(builder.getForce()).isFalse();
     assertThat(builder.getHelp()).isFalse();
-    assertThat(builder.getHostnameForClients()).isNull();
+    assertThat(builder.getHostNameForClients()).isNull();
     assertThat(builder.getMemberName()).isEqualTo("memberOne");
     assertThat(builder.getPid()).isNull();
     assertThat(builder.getPort().intValue()).isEqualTo(12345);

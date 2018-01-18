@@ -66,7 +66,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   public void usesLocatorPortAsDefaultPort() throws Exception {
     launcher = givenServerLauncher();
 
-    assertThat(launcher.getServerPort()).isEqualTo(defaultServerPort);
+    assertThat(launcher.getPort()).isEqualTo(defaultServerPort);
   }
 
   @Test
@@ -79,7 +79,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   @Test
   public void startWithPortUsesPort() throws Exception {
     ServerLauncher launcher =
-        startServer(newBuilder().setDisableDefaultServer(false).setServerPort(defaultServerPort));
+        startServer(newBuilder().setDisableDefaultServer(false).setPort(defaultServerPort));
 
     assertThat(launcher.getCache().getCacheServers().get(0).getPort()).isEqualTo(defaultServerPort);
   }
@@ -87,7 +87,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   @Test
   public void startWithPortZeroUsesAnEphemeralPort() throws Exception {
     ServerLauncher launcher =
-        startServer(newBuilder().setDisableDefaultServer(false).setServerPort(0));
+        startServer(newBuilder().setDisableDefaultServer(false).setPort(0));
 
     assertThat(launcher.getCache().getCacheServers().get(0).getPort()).isGreaterThan(0);
   }
@@ -168,7 +168,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
     int startPort = freePorts[1];
     givenCacheXmlFileWithServerPort(cacheXmlPort);
 
-    launcher = startServer(new Builder().setServerPort(startPort));
+    launcher = startServer(new Builder().setPort(startPort));
 
     // server should use --server-port instead of port in cache.xml
     assertThatServerPortIsInUse(startPort);
@@ -181,7 +181,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
     givenCacheXmlFile();
 
     launcher = awaitStart(new Builder().setMemberName(getUniqueName()).setRedirectOutput(true)
-        .setServerPort(defaultServerPort).setWorkingDirectory(getWorkingDirectoryPath())
+        .setPort(defaultServerPort).setWorkingDirectory(getWorkingDirectoryPath())
         .set(LOG_LEVEL, "config").set(MCAST_PORT, "0"));
 
     // verify server used --server-port instead of default
@@ -203,7 +203,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   public void startWithServerPortInUseFailsWithBindException() throws Exception {
     givenServerPortInUse(nonDefaultServerPort);
 
-    launcher = new Builder().setServerPort(nonDefaultServerPort).build();
+    launcher = new Builder().setPort(nonDefaultServerPort).build();
 
     assertThatThrownBy(() -> launcher.start()).isInstanceOf(RuntimeException.class)
         .hasCauseInstanceOf(BindException.class);

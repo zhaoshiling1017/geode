@@ -62,8 +62,9 @@ public class StatusServerCommand implements GfshCommand {
             .format(CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
       }
     } else {
-      final ServerLauncher serverLauncher = new ServerLauncher.Builder()
-          .setCommand(ServerLauncher.Command.STATUS).setDebug(isDebugging())
+      final ServerLauncher serverLauncher = (ServerLauncher)
+	  ((ServerLauncher.Builder)new ServerLauncher.Builder()
+          .setCommand(ServerLauncher.Command.STATUS).setDebug(isDebugging()))
           // NOTE since we do not know whether the "CacheServer" was enabled or not on the GemFire
           // server when it was started,
           // set the disableDefaultServer property in the ServerLauncher.Builder to default status

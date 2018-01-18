@@ -168,7 +168,7 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
       builder.set(propertyName, properties.getProperty(propertyName));
     }
     LocatorLauncher locatorLauncher = builder.setBindAddress(serverHostName)
-        .setHostnameForClients(serverHostName).setMemberName(memberName).setPort(locatorPort)
+        .setHostNameForClients(serverHostName).setMemberName(memberName).setPort(locatorPort)
         .setWorkingDirectory(workingDirectory.getCanonicalPath()).build();
     locatorLauncher.start();
 
@@ -191,8 +191,8 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
     ServerLauncher serverLauncher =
         builder.set("locators", serverHostName + "[" + locatorPort + "]").setMemberName(memberName)
             .set("log-level", "config").setHostNameForClients(serverHostName)
-            .setServerBindAddress(serverHostName).setServerPort(0)
             .setWorkingDirectory(workingDirectory.getCanonicalPath()).setPdxDiskStore("pdxDS")
+            .setBindAddress(serverHostName).setPort(0)
             .setPdxPersistent(true).build();
     serverLauncher.start();
 

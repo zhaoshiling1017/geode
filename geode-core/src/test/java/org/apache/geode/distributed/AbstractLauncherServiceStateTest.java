@@ -22,6 +22,7 @@ import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
@@ -29,6 +30,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.process.ProcessController;
+import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
@@ -127,6 +130,16 @@ public class AbstractLauncherServiceStateTest {
       this.memberName = memberName;
       this.logFile = new File(memberName + ".log");
     }
+
+    boolean isStoppable() { return false; }
+    ServiceState<String> stopInProcess() { return null; }
+    ServiceState<String> createNoResponseState(final Exception cause, final String msg) { return null; }
+    ServiceState<String> createNotRespondingState() { return null; }
+    ServiceState<String> createStoppedState() { return null; }
+    ProcessController createProcessController() { return null; }
+    ProcessType getProcessType() { return null; }
+    public Properties getProperties() { return null; }
+    public ServiceState<String> start() { return null; }
 
     public TestState status() {
       return new TestState(Status.ONLINE, null, System.currentTimeMillis(), getId(), pid, uptime,

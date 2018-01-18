@@ -170,11 +170,18 @@ public class StartLocatorCommand implements GfshCommand {
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, jmxManagerHostnameForClients);
 
-    LocatorLauncher.Builder locatorLauncherBuilder =
+//<<<<<<< ours
+//    LocatorLauncher.Builder locatorLauncherBuilder =
+//=======
+    // read the OSProcess enable redirect system property here
+    // TODO: replace with new GFSH argument
+    final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
+    LocatorLauncher.Builder locatorLauncherBuilder = (LocatorLauncher.Builder)
+//>>>>>>> theirs
         new LocatorLauncher.Builder().setBindAddress(bindAddress).setForce(force).setPort(port)
             .setRedirectOutput(redirectOutput).setWorkingDirectory(workingDirectory);
     if (hostnameForClients != null) {
-      locatorLauncherBuilder.setHostnameForClients(hostnameForClients);
+      locatorLauncherBuilder.setHostNameForClients(hostnameForClients);
     }
     if (memberName != null) {
       locatorLauncherBuilder.setMemberName(memberName);
@@ -278,7 +285,7 @@ public class StartLocatorCommand implements GfshCommand {
     if (bindAddr != null) {
       locatorHostName = bindAddr.getCanonicalHostName();
     } else {
-      locatorHostName = StringUtils.defaultIfBlank(locatorLauncher.getHostnameForClients(),
+      locatorHostName = StringUtils.defaultIfBlank(locatorLauncher.getHostNameForClients(),
           HostUtils.getLocalHost());
     }
 
@@ -452,8 +459,8 @@ public class StartLocatorCommand implements GfshCommand {
       commandLine.add("--force");
     }
 
-    if (StringUtils.isNotBlank(launcher.getHostnameForClients())) {
-      commandLine.add("--hostname-for-clients=" + launcher.getHostnameForClients());
+    if (StringUtils.isNotBlank(launcher.getHostNameForClients())) {
+      commandLine.add("--hostname-for-clients=" + launcher.getHostNameForClients());
     }
 
     if (launcher.getPort() != null) {

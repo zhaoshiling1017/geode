@@ -613,7 +613,7 @@ public class RestQueryAndFunctionIntegrationTest {
     String workingDirectory = System.getProperty("geode.build.dir", System.getProperty("user.dir"));
 
     ServerLauncher serverLauncher = new ServerLauncher.Builder().set(MCAST_PORT, "0")
-        .setServerBindAddress(this.hostName).setServerPort(0).set(START_DEV_REST_API, "true")
+        .setBindAddress(this.hostName).setPort(0).set(START_DEV_REST_API, "true")
         .set(HTTP_SERVICE_PORT, String.valueOf(this.restServicePort))
         .set(HTTP_SERVICE_BIND_ADDRESS, this.hostName).setPdxReadSerialized(true)
         .setWorkingDirectory(workingDirectory).build();

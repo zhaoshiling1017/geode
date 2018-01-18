@@ -115,18 +115,23 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void getRedirectOutputReturnsNullByDefault() throws Exception {
-    assertThat(new Builder().getRedirectOutput()).isNull();
+//<<<<<<< ours
+//  public void getRedirectOutputReturnsNullByDefault() throws Exception {
+//    assertThat(new Builder().getRedirectOutput()).isNull();
+//  }
+//
+//  @Test
+//  public void getServerBindAddressReturnsNullByDefault() throws Exception {
+//    assertThat(new Builder().getServerBindAddress()).isNull();
+//=======
+  public void getBindAddressReturnsNullByDefault() throws Exception {
+    assertThat(new Builder().getBindAddress()).isNull();
+//>>>>>>> theirs
   }
 
   @Test
-  public void getServerBindAddressReturnsNullByDefault() throws Exception {
-    assertThat(new Builder().getServerBindAddress()).isNull();
-  }
-
-  @Test
-  public void getServerPortReturnsDefaultPortByDefault() throws Exception {
-    assertThat(new Builder().getServerPort()).isEqualTo(Integer.valueOf(CacheServer.DEFAULT_PORT));
+  public void getPortReturnsDefaultPortByDefault() throws Exception {
+    assertThat(new Builder().getPort()).isEqualTo(Integer.valueOf(CacheServer.DEFAULT_PORT));
   }
 
   @Test
@@ -205,24 +210,28 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setServerBindAddressReturnsBuilderInstance() throws Exception {
+  public void setBindAddressReturnsBuilderInstance() throws Exception {
     Builder builder = new Builder();
 
-    assertThat(builder.setServerBindAddress(null)).isSameAs(builder);
+    assertThat(builder.setBindAddress(null)).isSameAs(builder);
   }
 
   @Test
+//<<<<<<< ours
   public void setRedirectOutputReturnsBuilderInstance() throws Exception {
     Builder builder = new Builder();
 
     assertThat(builder.setRedirectOutput(Boolean.TRUE)).isSameAs(builder);
   }
 
-  @Test
-  public void setServerPortReturnsBuilderInstance() throws Exception {
+//  @Test
+//  public void setServerPortReturnsBuilderInstance() throws Exception {
+//=======
+  public void setPortReturnsBuilderInstance() throws Exception {
+//>>>>>>> theirs
     Builder builder = new Builder();
 
-    assertThat(builder.setServerPort(null)).isSameAs(builder);
+    assertThat(builder.setPort(null)).isSameAs(builder);
   }
 
   @Test
@@ -508,111 +517,111 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setServerBindAddressToNullResultsInNull() throws Exception {
+  public void setBindAddressToNullResultsInNull() throws Exception {
     Builder builder = new Builder();
 
-    builder.setServerBindAddress(null);
+    builder.setBindAddress(null);
 
-    assertThat(builder.getServerBindAddress()).isNull();
+    assertThat(builder.getBindAddress()).isNull();
   }
 
   @Test
-  public void setServerBindAddressToEmptyStringResultsInNull() throws Exception {
+  public void setBindAddressToEmptyStringResultsInNull() throws Exception {
     Builder builder = new Builder();
 
-    builder.setServerBindAddress("");
+    builder.setBindAddress("");
 
-    assertThat(builder.getServerBindAddress()).isNull();
+    assertThat(builder.getBindAddress()).isNull();
   }
 
   @Test
-  public void setServerBindAddressToBlankStringResultsInNull() throws Exception {
+  public void setBindAddressToBlankStringResultsInNull() throws Exception {
     Builder builder = new Builder();
 
-    builder.setServerBindAddress("  ");
+    builder.setBindAddress("  ");
 
-    assertThat(builder.getServerBindAddress()).isNull();
+    assertThat(builder.getBindAddress()).isNull();
   }
 
   @Test
-  public void setServerBindAddressToCanonicalLocalHostUsesValue() throws Exception {
+  public void setBindAddressToCanonicalLocalHostUsesValue() throws Exception {
     Builder builder = new Builder();
 
-    builder.setServerBindAddress(localHostName);
+    builder.setBindAddress(localHostName);
 
-    assertThat(builder.getServerBindAddress()).isEqualTo(localHost);
+    assertThat(builder.getBindAddress()).isEqualTo(localHost);
   }
 
   @Test
-  public void setServerBindAddressToLocalHostNameUsesValue() throws Exception {
+  public void setBindAddressToLocalHostNameUsesValue() throws Exception {
     String host = InetAddress.getLocalHost().getHostName();
 
-    Builder builder = new Builder().setServerBindAddress(host);
+    AbstractLauncher.Builder builder = new Builder().setBindAddress(host);
 
-    assertThat(builder.getServerBindAddress()).isEqualTo(localHost);
+    assertThat(builder.getBindAddress()).isEqualTo(localHost);
   }
 
   @Test
-  public void setServerBindAddressToUnknownHostThrowsIllegalArgumentException() throws Exception {
-    assertThatThrownBy(() -> new Builder().setServerBindAddress("badHostName.badCompany.com"))
+  public void setBindAddressToUnknownHostThrowsIllegalArgumentException() throws Exception {
+    assertThatThrownBy(() -> new Builder().setBindAddress("badHostName.badCompany.com"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasCauseInstanceOf(UnknownHostException.class);
   }
 
   @Test
-  public void setServerBindAddressToNonLocalHostThrowsIllegalArgumentException() throws Exception {
-    assertThatThrownBy(() -> new Builder().setServerBindAddress("yahoo.com"))
+  public void setBindAddressToNonLocalHostThrowsIllegalArgumentException() throws Exception {
+    assertThatThrownBy(() -> new Builder().setBindAddress("yahoo.com"))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setServerPortToNullResultsInDefaultPort() throws Exception {
+  public void setPortToNullResultsInDefaultPort() throws Exception {
     Builder builder = new Builder();
 
-    builder.setServerPort(null);
+    builder.setPort(null);
 
-    assertThat(builder.getServerPort()).isEqualTo(Integer.valueOf(CacheServer.DEFAULT_PORT));
+    assertThat(builder.getPort()).isEqualTo(Integer.valueOf(CacheServer.DEFAULT_PORT));
   }
 
 
   @Test
-  public void setServerPortToZeroOrGreaterUsesValue() throws Exception {
+  public void setPortToZeroOrGreaterUsesValue() throws Exception {
     Builder builder = new Builder();
 
-    builder.setServerPort(0);
-    assertThat(builder.getServerPort().intValue()).isEqualTo(0);
-    assertThat(builder.isServerPortSetByUser()).isFalse();
+    builder.setPort(0);
+    assertThat(builder.getPort().intValue()).isEqualTo(0);
+    assertThat(builder.isPortSetByUser()).isFalse();
 
-    builder.setServerPort(1);
-    assertThat(builder.getServerPort().intValue()).isEqualTo(1);
-    assertThat(builder.isServerPortSetByUser()).isTrue();
+    builder.setPort(1);
+    assertThat(builder.getPort().intValue()).isEqualTo(1);
+    assertThat(builder.isPortSetByUser()).isTrue();
 
-    builder.setServerPort(80);
-    assertThat(builder.getServerPort().intValue()).isEqualTo(80);
-    assertThat(builder.isServerPortSetByUser()).isTrue();
+    builder.setPort(80);
+    assertThat(builder.getPort().intValue()).isEqualTo(80);
+    assertThat(builder.isPortSetByUser()).isTrue();
 
-    builder.setServerPort(1024);
-    assertThat(builder.getServerPort().intValue()).isEqualTo(1024);
-    assertThat(builder.isServerPortSetByUser()).isTrue();
+    builder.setPort(1024);
+    assertThat(builder.getPort().intValue()).isEqualTo(1024);
+    assertThat(builder.isPortSetByUser()).isTrue();
 
-    builder.setServerPort(65535);
-    assertThat(builder.getServerPort().intValue()).isEqualTo(65535);
-    assertThat(builder.isServerPortSetByUser()).isTrue();
+    builder.setPort(65535);
+    assertThat(builder.getPort().intValue()).isEqualTo(65535);
+    assertThat(builder.isPortSetByUser()).isTrue();
 
-    builder.setServerPort(0);
-    assertThat(builder.getServerPort().intValue()).isEqualTo(0);
-    assertThat(builder.isServerPortSetByUser()).isFalse();
+    builder.setPort(0);
+    assertThat(builder.getPort().intValue()).isEqualTo(0);
+    assertThat(builder.isPortSetByUser()).isFalse();
   }
 
   @Test
-  public void setServerPortAboveMaxValueThrowsIllegalArgumentException() throws Exception {
-    assertThatThrownBy(() -> new Builder().setServerPort(65536))
+  public void setPortAboveMaxValueThrowsIllegalArgumentException() throws Exception {
+    assertThatThrownBy(() -> new Builder().setPort(65536))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setServerPortToNegativeValueThrowsIllegalArgumentException() throws Exception {
-    assertThatThrownBy(() -> new Builder().setServerPort(-1))
+  public void setPortToNegativeValueThrowsIllegalArgumentException() throws Exception {
+    assertThatThrownBy(() -> new Builder().setPort(-1))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -679,8 +688,8 @@ public class ServerLauncherBuilderTest {
     assertThat(builder.getRebalance()).isTrue();
     assertThat(builder.getRedirectOutput()).isTrue();
     assertThat(builder.getPid().intValue()).isEqualTo(1234);
-    assertThat(builder.getServerBindAddress()).isEqualTo(InetAddress.getLocalHost());
-    assertThat(builder.getServerPort().intValue()).isEqualTo(11235);
+    assertThat(builder.getBindAddress()).isEqualTo(InetAddress.getLocalHost());
+    assertThat(builder.getPort().intValue()).isEqualTo(11235);
   }
 
   @Test
@@ -706,8 +715,8 @@ public class ServerLauncherBuilderTest {
     assertThat(builder.getRebalance()).isTrue();
     assertThat(builder.getRedirectOutput()).isTrue();
     assertThat(builder.getPid().intValue()).isEqualTo(1234);
-    assertThat(builder.getServerBindAddress()).isEqualTo(InetAddress.getLocalHost());
-    assertThat(builder.getServerPort().intValue()).isEqualTo(11235);
+    assertThat(builder.getBindAddress()).isEqualTo(InetAddress.getLocalHost());
+    assertThat(builder.getPort().intValue()).isEqualTo(11235);
   }
 
   @Test
@@ -822,15 +831,15 @@ public class ServerLauncherBuilderTest {
   public void buildCreatesServerLauncherWithBuilderValues() throws Exception {
     ServerLauncher launcher = new Builder().setCommand(Command.STOP).setAssignBuckets(true)
         .setForce(true).setMemberName("serverOne").setRebalance(true)
-        .setServerBindAddress(InetAddress.getLocalHost().getHostAddress()).setServerPort(11235)
+        .setBindAddress(InetAddress.getLocalHost().getHostAddress()).setPort(11235)
         .setCriticalHeapPercentage(90.0f).setEvictionHeapPercentage(75.0f).setMaxConnections(100)
         .setMaxMessageCount(512).setMaxThreads(8).setMessageTimeToLive(120000)
         .setSocketBufferSize(32768).setRedirectOutput(Boolean.TRUE).build();
 
     assertThat(launcher.getCommand()).isEqualTo(Command.STOP);
     assertThat(launcher.getMemberName()).isEqualTo("serverOne");
-    assertThat(launcher.getServerBindAddress()).isEqualTo(InetAddress.getLocalHost());
-    assertThat(launcher.getServerPort().intValue()).isEqualTo(11235);
+    assertThat(launcher.getBindAddress()).isEqualTo(InetAddress.getLocalHost());
+    assertThat(launcher.getPort().intValue()).isEqualTo(11235);
     assertThat(launcher.getCriticalHeapPercentage().floatValue()).isEqualTo(90.0f);
     assertThat(launcher.getEvictionHeapPercentage().floatValue()).isEqualTo(75.0f);
     assertThat(launcher.getMaxConnections().intValue()).isEqualTo(100);

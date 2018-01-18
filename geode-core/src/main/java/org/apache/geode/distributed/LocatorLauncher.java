@@ -100,7 +100,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     helpMap.put("launcher",
         LocalizedStrings.LocatorLauncher_LOCATOR_LAUNCHER_HELP.toLocalizedString());
     helpMap.put(Command.START.getName(), LocalizedStrings.LocatorLauncher_START_LOCATOR_HELP
-        .toLocalizedString(String.valueOf(getDefaultLocatorPort())));
+        .toLocalizedString(String.valueOf(getDefaultPort())));
     helpMap.put(Command.STATUS.getName(),
         LocalizedStrings.LocatorLauncher_STATUS_LOCATOR_HELP.toLocalizedString());
     helpMap.put(Command.STOP.getName(),
@@ -122,7 +122,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     helpMap.put("member", LocalizedStrings.LocatorLauncher_LOCATOR_MEMBER_HELP.toLocalizedString());
     helpMap.put("pid", LocalizedStrings.LocatorLauncher_LOCATOR_PID_HELP.toLocalizedString());
     helpMap.put("port", LocalizedStrings.LocatorLauncher_LOCATOR_PORT_HELP
-        .toLocalizedString(String.valueOf(getDefaultLocatorPort())));
+        .toLocalizedString(String.valueOf(getDefaultPort())));
     helpMap.put("redirect-output",
         LocalizedStrings.LocatorLauncher_LOCATOR_REDIRECT_OUTPUT_HELP.toLocalizedString());
   }
@@ -171,7 +171,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   private final Properties distributedSystemProperties;
 
-  private final String hostnameForClients;
+  private final String hostNameForClients;
   private final String memberName;
   private final String workingDirectory;
 
@@ -195,19 +195,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
   }
 
-  private static Integer getDefaultLocatorPort() {
+  private static Integer getDefaultPort() {
     return Integer.getInteger(DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY,
         DistributionLocator.DEFAULT_LOCATOR_PORT);
-  }
-
-  /**
-   * Gets the instance of the LocatorLauncher used to launch the GemFire Locator, or null if this VM
-   * does not have an instance of LocatorLauncher indicating no GemFire Locator is running.
-   *
-   * @return the instance of LocatorLauncher used to launcher a GemFire Locator in this VM.
-   */
-  public static LocatorLauncher getInstance() {
-    return INSTANCE.get();
   }
 
   /**
@@ -217,7 +207,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @return the LocatorState for this process or null.
    */
   public static LocatorState getLocatorState() {
-    return (getInstance() != null ? getInstance().status() : null);
+    return (LocatorState)(getInstance() != null ? getInstance().status() : null);
   }
 
   /**
@@ -239,7 +229,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     this.deletePidFileOnStop = Boolean.TRUE.equals(builder.getDeletePidFileOnStop());
     this.distributedSystemProperties = builder.getDistributedSystemProperties();
     this.force = Boolean.TRUE.equals(builder.getForce());
-    this.hostnameForClients = builder.getHostnameForClients();
+    this.hostNameForClients = builder.getHostNameForClients();
     this.memberName = builder.getMemberName();
     this.pid = builder.getPid();
     this.portSpecified = builder.isPortSpecified();
@@ -386,14 +376,15 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return "localhost/127.0.0.1";
     }
   }
-
+ 
   /**
-   * Gets the hostname that clients will use to lookup the running Locator.
+   * Gets the host name that clients will use to lookup the running Locator.
    *
-   * @return a String indicating the hostname used by clients to lookup the Locator.
+   * @return a String indicating the hostname used by clients to lookup the Loc
+ator.
    */
-  public String getHostnameForClients() {
-    return this.hostnameForClients;
+  public String getHostNameForClients() {
+    return this.hostNameForClients;
   }
 
   /**
@@ -452,7 +443,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see #getPort()
    */
   public String getPortAsString() {
-    return defaultIfNull(getPort(), getDefaultLocatorPort()).toString();
+    return defaultIfNull(getPort(), getDefaultPort()).toString();
   }
 
   /**
@@ -638,8 +629,13 @@ public class LocatorLauncher extends AbstractLauncher<String> {
             statusMessage -> LocatorLauncher.this.statusMessage = statusMessage);
 
         try {
-          this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
-              getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients());
+//<<<<<<< ours
+//          this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
+//              getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients());
+//=======
+          this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null, null,
+              getBindAddress(), true, getDistributedSystemProperties(), getHostNameForClients());
+//>>>>>>> theirs
         } finally {
           ProcessLauncherContext.remove();
         }
@@ -680,6 +676,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
           LocalizedStrings.Launcher_Command_START_SERVICE_ALREADY_RUNNING_ERROR_MESSAGE
               .toLocalizedString(getServiceName(), getWorkingDirectory(), getId()));
     }
+  }
+
+  public LocatorState stop() {
+    return (LocatorState)super.stop();
   }
 
   @Override
@@ -795,7 +795,15 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     // the Locator is having problems. The Locator could be slow in starting up and the timeout may
     // not be
     // long enough.
+    return createNotRespondingState();
+  }
+
+  LocatorState createNotRespondingState() {
     return new LocatorState(this, Status.NOT_RESPONDING);
+  }
+
+  LocatorState createStoppedState() {
+    return new LocatorState(this, Status.STOPPED);
   }
 
   private void timedWait(final long interval, final TimeUnit timeUnit) {
@@ -835,7 +843,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see org.apache.geode.distributed.LocatorLauncher.LocatorState
    */
   public LocatorState status() {
-    final LocatorLauncher launcher = getInstance();
+    final LocatorLauncher launcher = (LocatorLauncher)getInstance();
     // if this instance is starting then return local status
     if (this.starting.get()) {
       debug(
@@ -926,7 +934,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
       // note: in-process request will go infinite loop unless we do the following
       if (parsedPid == ProcessUtils.identifyPid()) {
-        LocatorLauncher runningLauncher = getInstance();
+        LocatorLauncher runningLauncher = (LocatorLauncher)getInstance();
         if (runningLauncher != null) {
           return runningLauncher.status();
         }
@@ -964,55 +972,11 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @return a boolean indicating whether the Locator can be stopped in-process (the application's
    *         process with an embedded Locator).
    */
-  protected boolean isStoppable() {
+  boolean isStoppable() {
     return (isRunning() && getLocator() != null);
   }
 
-  /**
-   * Stop shuts the running Locator down. Using the API, the Locator is requested to stop by calling
-   * the Locator object's 'stop' method. Internally, this method is no different than using the
-   * LocatorLauncher class from the command-line or from within GemFire shell (Gfsh). In every
-   * single case, stop sends a TCP/IP 'shutdown' request on the configured address/port to which the
-   * Locator is bound and listening.
-   *
-   * If the "shutdown" request is successful, then the Locator will be 'STOPPED'. Otherwise, the
-   * Locator is considered 'OFFLINE' since the actual state cannot be fully assessed (as in the
-   * application process in which the Locator was hosted may still be running and the Locator object
-   * may still exist even though it is no longer responding to location-based requests). The later
-   * is particularly important in cases where the system resources (such as Sockets) may not have
-   * been cleaned up yet. Therefore, by returning a status of 'OFFLINE', the value is meant to
-   * reflect this in-deterministic state.
-   *
-   * @return a LocatorState indicating the state of the Locator after stop has been requested.
-   * @see #start()
-   * @see #status()
-   * @see org.apache.geode.distributed.LocatorLauncher.LocatorState
-   * @see org.apache.geode.distributed.AbstractLauncher.Status#NOT_RESPONDING
-   * @see org.apache.geode.distributed.AbstractLauncher.Status#STOPPED
-   */
-  public LocatorState stop() {
-    final LocatorLauncher launcher = getInstance();
-    // if this instance is running then stop it
-    if (isStoppable()) {
-      return stopInProcess();
-    }
-    // if in-process but difference instance of LocatorLauncher
-    else if (isPidInProcess() && launcher != null) {
-      return launcher.stopInProcess();
-    }
-    // attempt to stop Locator using pid...
-    else if (getPid() != null) {
-      return stopWithPid();
-    }
-    // attempt to stop Locator using the working directory...
-    else if (getWorkingDirectory() != null) {
-      return stopWithWorkingDirectory();
-    } else {
-      return new LocatorState(this, Status.NOT_RESPONDING);
-    }
-  }
-
-  private LocatorState stopInProcess() {
+  LocatorState stopInProcess() {
     if (isStoppable()) {
       this.locator.stop();
       this.locator = null;
@@ -1026,70 +990,16 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
   }
 
-  private LocatorState stopWithPid() {
-    try {
-      final ProcessController controller = new ProcessControllerFactory()
+  ProcessController createProcessController() {
+    return new ProcessControllerFactory()
           .createProcessController(new LocatorControllerParameters(), getPid());
-      controller.checkPidSupport();
-      controller.stop();
-      return new LocatorState(this, Status.STOPPED);
-    } catch (ConnectionFailedException handled) {
-      // failed to attach to locator JVM
-      return createNoResponseState(handled,
-          "Failed to connect to locator with process id " + getPid());
-    } catch (IOException | MBeanInvocationFailedException
-        | UnableToControlProcessException handled) {
-      return createNoResponseState(handled,
-          "Failed to communicate with locator with process id " + getPid());
-    }
   }
 
-  private LocatorState stopWithWorkingDirectory() {
-    int parsedPid = 0;
-    try {
-      final ProcessController controller =
-          new ProcessControllerFactory().createProcessController(this.controllerParameters,
-              new File(getWorkingDirectory()), ProcessType.LOCATOR.getPidFileName());
-      parsedPid = controller.getProcessId();
-
-      // NOTE in-process request will go infinite loop unless we do the following
-      if (parsedPid == ProcessUtils.identifyPid()) {
-        final LocatorLauncher runningLauncher = getInstance();
-        if (runningLauncher != null) {
-          return runningLauncher.stopInProcess();
-        }
-      }
-
-      controller.stop();
-      return new LocatorState(this, Status.STOPPED);
-    } catch (ConnectionFailedException handled) {
-      // failed to attach to locator JVM
-      return createNoResponseState(handled,
-          "Failed to connect to locator with process id " + parsedPid);
-    } catch (FileNotFoundException handled) {
-      // could not find pid file
-      return createNoResponseState(handled, "Failed to find process file "
-          + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (IOException | MBeanInvocationFailedException
-        | UnableToControlProcessException handled) {
-      return createNoResponseState(handled,
-          "Failed to communicate with locator with process id " + parsedPid);
-    } catch (InterruptedException handled) {
-      Thread.currentThread().interrupt();
-      return createNoResponseState(handled,
-          "Interrupted while trying to communicate with locator with process id " + parsedPid);
-    } catch (PidUnavailableException handled) {
-      // couldn't determine pid from within locator JVM
-      return createNoResponseState(handled, "Failed to find usable process id within file "
-          + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (TimeoutException handled) {
-      return createNoResponseState(handled,
-          "Timed out trying to find usable process id within file "
-              + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
-    }
+  ProcessType getProcessType() {
+    return ProcessType.LOCATOR;
   }
 
-  private LocatorState createNoResponseState(final Exception cause, final String errorMessage) {
+  LocatorState createNoResponseState(final Exception cause, final String errorMessage) {
     debug(ExceptionUtils.getFullStackTrace(cause) + errorMessage);
     return new LocatorState(this, Status.NOT_RESPONDING, errorMessage);
   }
@@ -1170,44 +1080,17 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * create a properly initialized instance of the LocatorLauncher class for running the Locator and
    * performing other Locator operations.
    */
-  public static class Builder {
+  public static class Builder extends AbstractLauncher.Builder {
 
     protected static final Command DEFAULT_COMMAND = Command.UNSPECIFIED;
 
-    private Boolean debug;
-    private Boolean deletePidFileOnStop;
-    private Boolean force;
-    private Boolean help;
-    private Boolean redirectOutput;
     private Boolean loadSharedConfigFromDir;
     private Command command;
 
-    private InetAddress bindAddress;
+    private final static String SERVICE_NAME = "Locator";
 
-    private Integer pid;
-    private Integer port;
-
-    private final Properties distributedSystemProperties = new Properties();
-
-    private String hostnameForClients;
-    private String memberName;
-    private String workingDirectory;
-
-    /**
-     * Default constructor used to create an instance of the Builder class for programmatical
-     * access.
-     */
-    public Builder() {}
-
-    /**
-     * Constructor used to create and configure an instance of the Builder class with the specified
-     * arguments, often passed from the command-line when launching an instance of this class from
-     * the command-line using the Java launcher.
-     *
-     * @param args the array of arguments used to configure the Builder.
-     */
     public Builder(final String... args) {
-      parseArguments(args != null ? args : new String[0]);
+      super(args);
     }
 
     /**
@@ -1265,7 +1148,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
           }
 
           if (options.has("hostname-for-clients")) {
-            setHostnameForClients(ObjectUtils.toString(options.valueOf("hostname-for-clients")));
+            setHostNameForClients(ObjectUtils.toString(options.valueOf("hostname-for-clients")));
           }
 
           if (options.has("pid")) {
@@ -1291,12 +1174,13 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Iterates the list of arguments in search of the target Locator launcher command.
+     * Iterates the list of arguments in search of the target launcher command.
      *
-     * @param args an array of arguments from which to search for the Locator launcher command.
-     * @see org.apache.geode.distributed.LocatorLauncher.Command#valueOfName(String)
+     * @param args an array of arguments from which to search for the service launcher command.
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#valueOfName(String)
      * @see #parseArguments(String...)
      */
+    // GEODE-3584: Command needs refactoring as well
     protected void parseCommand(final String... args) {
       // search the list of arguments for the command; technically, the command should be the first
       // argument in the
@@ -1313,13 +1197,13 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Iterates the list of arguments in search of the Locator's GemFire member name. If the
-     * argument does not start with '-' or is not the name of a Locator launcher command, then the
-     * value is presumed to be the member name for the Locator in GemFire.
+     * Iterates the list of arguments in search of the Launcher's GemFire member name. If the
+     * argument does not start with '-' or is not the name of a Launcher launcher command, then the
+     * value is presumed to be the member name for the Launcher in GemFire.
      *
-     * @param args the array of arguments from which to search for the Locator's member name in
+     * @param args the array of arguments from which to search for the Launcher's member name in
      *        GemFire.
-     * @see org.apache.geode.distributed.LocatorLauncher.Command#isCommand(String)
+     * @see org.apache.geode.distributed.AbstractLauncher.Command#isCommand(String)
      * @see #parseArguments(String...)
      */
     protected void parseMemberName(final String... args) {
@@ -1358,415 +1242,88 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return this;
     }
 
-    /**
-     * Determines whether the new instance of the LocatorLauncher will be set to debug mode.
-     *
-     * @return a boolean value indicating whether debug mode is enabled or disabled.
-     * @see #setDebug(Boolean)
-     */
-    public Boolean getDebug() {
-      return this.debug;
-    }
-
-    /**
-     * Sets whether the new instance of the LocatorLauncher will be set to debug mode.
-     *
-     * @param debug a boolean value indicating whether debug mode is to be enabled or disabled.
-     * @return this Builder instance.
-     * @see #getDebug()
-     */
+    /* The following methods call the super class but override its method so the correct type can be returned. */
     public Builder setDebug(final Boolean debug) {
-      this.debug = debug;
+      super.setDebug(debug);
       return this;
     }
 
-    /**
-     * Determines whether the Geode Locator should delete the pid file when its service stops or
-     * when the JVM exits.
-     *
-     * @return a boolean value indicating if the pid file should be deleted when this service stops
-     *         or when the JVM exits.
-     * @see #setDeletePidFileOnStop(Boolean)
-     */
-    public Boolean getDeletePidFileOnStop() {
-      return this.deletePidFileOnStop;
-    }
-
-    /**
-     * Sets whether the Geode Locator should delete the pid file when its service stops or when the
-     * JVM exits.
-     *
-     * @param deletePidFileOnStop a boolean value indicating if the pid file should be deleted when
-     *        this service stops or when the JVM exits.
-     * @return this Builder instance.
-     * @see #getDeletePidFileOnStop()
-     */
     public Builder setDeletePidFileOnStop(final Boolean deletePidFileOnStop) {
-      this.deletePidFileOnStop = deletePidFileOnStop;
+      super.setDeletePidFileOnStop(deletePidFileOnStop);
       return this;
     }
 
-    /**
-     * Gets the GemFire Distributed System (cluster) Properties configuration.
-     *
-     * @return a Properties object containing configuration settings for the GemFire Distributed
-     *         System (cluster).
-     * @see java.util.Properties
-     */
-    public Properties getDistributedSystemProperties() {
-      return this.distributedSystemProperties;
-    }
-
-    /**
-     * Gets the boolean value used by the Locator to determine if it should overwrite the PID file
-     * if it already exists.
-     *
-     * @return the boolean value specifying whether or not to overwrite the PID file if it already
-     *         exists.
-     * @see #setForce(Boolean)
-     */
-    public Boolean getForce() {
-      return defaultIfNull(this.force, DEFAULT_FORCE);
-    }
-
-    /**
-     * Sets the boolean value used by the Locator to determine if it should overwrite the PID file
-     * if it already exists.
-     *
-     * @param force a boolean value indicating whether to overwrite the PID file when it already
-     *        exists.
-     * @return this Builder instance.
-     * @see #getForce()
-     */
     public Builder setForce(final Boolean force) {
-      this.force = force;
+      super.setForce(force);
       return this;
     }
 
-
-    /**
-     * Determines whether the new instance of LocatorLauncher will be used to output help
-     * information for either a specific command, or for using LocatorLauncher in general.
-     *
-     * @return a boolean value indicating whether help will be output during the invocation of
-     *         LocatorLauncher.
-     * @see #setHelp(Boolean)
-     */
-    public Boolean getHelp() {
-      return this.help;
-    }
-
-    /**
-     * Determines whether help has been enabled.
-     *
-     * @return a boolean indicating if help was enabled.
-     */
-    private boolean isHelping() {
-      return Boolean.TRUE.equals(getHelp());
-    }
-
-    /**
-     * Sets whether the new instance of LocatorLauncher will be used to output help information for
-     * either a specific command, or for using LocatorLauncher in general.
-     *
-     * @param help a boolean indicating whether help information is to be displayed during
-     *        invocation of LocatorLauncher.
-     * @return this Builder instance.
-     * @see #getHelp()
-     */
     public Builder setHelp(final Boolean help) {
-      this.help = help;
+      super.setHelp(help);
       return this;
     }
 
-    boolean isBindAddressSpecified() {
-      return (getBindAddress() != null);
-
-    }
-
-    /**
-     * Gets the IP address to which the Locator has bound itself listening for client requests.
-     *
-     * @return an InetAddress with the IP address or hostname on which the Locator is bound and
-     *         listening.
-     * @see #setBindAddress(String)
-     * @see java.net.InetAddress
-     */
-    public InetAddress getBindAddress() {
-      return this.bindAddress;
-    }
-
-    /**
-     * Sets the IP address as an java.net.InetAddress to which the Locator has bound itself
-     * listening for client requests.
-     *
-     * @param bindAddress the InetAddress with the IP address or hostname on which the Locator is
-     *        bound and listening.
-     * @return this Builder instance.
-     * @throws IllegalArgumentException wrapping the UnknownHostException if the IP address or
-     *         hostname for the bind address is unknown.
-     * @see #getBindAddress()
-     * @see java.net.InetAddress
-     */
     public Builder setBindAddress(final String bindAddress) {
-      if (isBlank(bindAddress)) {
-        this.bindAddress = null;
-        return this;
-      } else {
-        try {
-          InetAddress address = InetAddress.getByName(bindAddress);
-          if (SocketCreator.isLocalHost(address)) {
-            this.bindAddress = address;
-            return this;
-          } else {
-            throw new IllegalArgumentException(
-                bindAddress + " is not an address for this machine.");
-          }
-        } catch (UnknownHostException e) {
-          throw new IllegalArgumentException(
-              LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE
-                  .toLocalizedString("Locator"),
-              e);
-        }
-      }
-    }
-
-    /**
-     * Gets the hostname used by clients to lookup the Locator.
-     *
-     * @return a String indicating the hostname Locator binding used in client lookups.
-     * @see #setHostnameForClients(String)
-     */
-    public String getHostnameForClients() {
-      return this.hostnameForClients;
-    }
-
-    /**
-     * Sets the hostname used by clients to lookup the Locator.
-     *
-     * @param hostnameForClients a String indicating the hostname Locator binding used in client
-     *        lookups.
-     * @return this Builder instance.
-     * @throws IllegalArgumentException if the hostname was not specified (is blank or empty), such
-     *         as when the --hostname-for-clients command-line option may have been specified
-     *         without any argument.
-     * @see #getHostnameForClients()
-     */
-    public Builder setHostnameForClients(final String hostnameForClients) {
-      if (isBlank(hostnameForClients)) {
-        throw new IllegalArgumentException(
-            LocalizedStrings.LocatorLauncher_Builder_INVALID_HOSTNAME_FOR_CLIENTS_ERROR_MESSAGE
-                .toLocalizedString());
-      }
-      this.hostnameForClients = hostnameForClients;
+      super.setBindAddress(bindAddress);
       return this;
     }
 
-    /**
-     * Gets the member name of this Locator in GemFire.
-     *
-     * @return a String indicating the member name of this Locator in GemFire.
-     * @see #setMemberName(String)
-     */
-    public String getMemberName() {
-      return this.memberName;
+    public Builder setHostNameForClients(final String hostNameForClients) {
+      super.setHostNameForClients(hostNameForClients);
+      return this;
     }
 
-    /**
-     * Sets the member name of the Locator in GemFire.
-     *
-     * @param memberName a String indicating the member name of this Locator in GemFire.
-     * @return this Builder instance.
-     * @throws IllegalArgumentException if the member name is invalid.
-     * @see #getMemberName()
-     */
     public Builder setMemberName(final String memberName) {
-      if (isBlank(memberName)) {
-        throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE
-                .toLocalizedString("Locator"));
-      }
-      this.memberName = memberName;
+      super.setMemberName(memberName);
       return this;
     }
 
-    /**
-     * Gets the process ID (PID) of the running Locator indicated by the user as an argument to the
-     * LocatorLauncher. This PID is used by the Locator launcher to determine the Locator's status,
-     * or invoke shutdown on the Locator.
-     *
-     * @return a user specified Integer value indicating the process ID of the running Locator.
-     * @see #setPid(Integer)
-     */
-    public Integer getPid() {
-      return this.pid;
-    }
-
-    /**
-     * Sets the process ID (PID) of the running Locator indicated by the user as an argument to the
-     * LocatorLauncher. This PID will be used by the Locator launcher to determine the Locator's
-     * status, or invoke shutdown on the Locator.
-     *
-     * @param pid a user specified Integer value indicating the process ID of the running Locator.
-     * @return this Builder instance.
-     * @throws IllegalArgumentException if the process ID (PID) is not valid (greater than zero if
-     *         not null).
-     * @see #getPid()
-     */
     public Builder setPid(final Integer pid) {
-      if (pid != null && pid < 0) {
-        throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_PID_ERROR_MESSAGE.toLocalizedString());
-      }
-      this.pid = pid;
+      super.setPid(pid);
       return this;
     }
 
-    boolean isPortSpecified() {
-      return (this.port != null);
+    public Builder setPort(final Integer port) {
+      super.setPort(port);
+      return this;
     }
 
     /**
      * Gets the port number used by the Locator to listen for client requests. If the port was not
      * specified, then the default Locator port (10334) is returned.
      *
-     * @return the specified Locator port or the default port if unspecified.
+     * @return the specified service port or the default port if unspecified.
      * @see #setPort(Integer)
      */
     public Integer getPort() {
-      return defaultIfNull(port, getDefaultLocatorPort());
+      return defaultIfNull(port, getDefaultPort());
     }
 
-    /**
-     * Sets the port number used by the Locator to listen for client requests. The port number must
-     * be between 1 and 65535 inclusive.
-     *
-     * @param port an Integer value indicating the port used by the Locator to listen for client
-     *        requests.
-     * @return this Builder instance.
-     * @throws IllegalArgumentException if the port number is not valid.
-     * @see #getPort()
-     */
-    public Builder setPort(final Integer port) {
-      // NOTE if the user were to specify a port number of 0, then java.net.ServerSocket will pick
-      // an ephemeral port
-      // to bind the socket, which we do not want.
-      if (port != null && (port < 0 || port > 65535)) {
-        throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_INVALID_PORT_ERROR_MESSAGE
-                .toLocalizedString("Locator"));
-      }
-      this.port = port;
-      return this;
-    }
-
-    /**
-     * Determines whether the new instance of LocatorLauncher will redirect output to system logs
-     * when starting a Locator.
-     *
-     * @return a boolean value indicating if output will be redirected to system logs when starting
-     *         a Locator
-     * @see #setRedirectOutput(Boolean)
-     */
-    public Boolean getRedirectOutput() {
-      return this.redirectOutput;
-    }
-
-    /**
-     * Determines whether redirecting of output has been enabled.
-     *
-     * @return a boolean indicating if redirecting of output was enabled.
-     */
-    private boolean isRedirectingOutput() {
-      return Boolean.TRUE.equals(getRedirectOutput());
-    }
-
-    /**
-     * Sets whether the new instance of LocatorLauncher will redirect output to system logs when
-     * starting a Locator.
-     *
-     * @param redirectOutput a boolean value indicating if output will be redirected to system logs
-     *        when starting a Locator.
-     * @return this Builder instance.
-     * @see #getRedirectOutput()
-     */
     public Builder setRedirectOutput(final Boolean redirectOutput) {
-      this.redirectOutput = redirectOutput;
+      super.setRedirectOutput(redirectOutput);
       return this;
+    }
+
+    public Builder setWorkingDirectory(final String workingDirectory) {
+      super.setWorkingDirectory(workingDirectory);
+      return this;
+    }
+
+    public Builder set(final String propertyName, final String propertyValue) {
+      super.set(propertyName, propertyValue);
+      return this;
+    }
+
+    boolean isBindAddressSpecified() {
+      return (getBindAddress() != null);
+    }
+
+    boolean isPortSpecified() {
+      return (this.port != null);
     }
 
     boolean isWorkingDirectorySpecified() {
       return isNotBlank(this.workingDirectory);
-    }
-
-    /**
-     * Gets the working directory pathname in which the Locator will be ran. If the directory is
-     * unspecified, then working directory defaults to the current directory.
-     *
-     * @return a String indicating the working directory pathname.
-     * @see #setWorkingDirectory(String)
-     */
-    public String getWorkingDirectory() {
-      return tryGetCanonicalPathElseGetAbsolutePath(
-          new File(defaultIfBlank(this.workingDirectory, DEFAULT_WORKING_DIRECTORY)));
-    }
-
-    /**
-     * Sets the working directory in which the Locator will be ran. This also the directory in which
-     * all Locator files (such as log and license files) will be written. If the directory is
-     * unspecified, then the working directory defaults to the current directory.
-     *
-     * @param workingDirectory a String indicating the pathname of the directory in which the
-     *        Locator will be ran.
-     * @return this Builder instance.
-     * @throws IllegalArgumentException wrapping a FileNotFoundException if the working directory
-     *         pathname cannot be found.
-     * @see #getWorkingDirectory()
-     * @see java.io.FileNotFoundException
-     */
-    public Builder setWorkingDirectory(final String workingDirectory) {
-      if (!new File(defaultIfBlank(workingDirectory, DEFAULT_WORKING_DIRECTORY)).isDirectory()) {
-        throw new IllegalArgumentException(
-            LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE
-                .toLocalizedString("Locator"),
-            new FileNotFoundException(workingDirectory));
-      }
-      this.workingDirectory = workingDirectory;
-      return this;
-    }
-
-    /**
-     * Sets a GemFire Distributed System Property.
-     *
-     * @param propertyName a String indicating the name of the GemFire Distributed System property
-     *        as described in {@link ConfigurationProperties}
-     * @param propertyValue a String value for the GemFire Distributed System property.
-     * @return this Builder instance.
-     */
-    public Builder set(final String propertyName, final String propertyValue) {
-      this.distributedSystemProperties.setProperty(propertyName, propertyValue);
-      return this;
-    }
-
-    /**
-     * Validates the configuration settings and properties of this Builder, ensuring that all
-     * invariants have been met. Currently, the only invariant constraining the Builder is that the
-     * user must specify the member name for the Locator in the GemFire distributed system as a
-     * command-line argument, or by setting the memberName property programmatically using the
-     * corresponding setter method. If the member name is not given, then the user must have
-     * specified the pathname to the gemfire.properties file before validate is called. It is then
-     * assumed, but not further validated, that the user has specified the Locator's member name in
-     * the properties file.
-     *
-     * @throws IllegalStateException if the Builder is not properly configured.
-     */
-    protected void validate() {
-      if (!isHelping()) {
-        validateOnStart();
-        validateOnStatus();
-        validateOnStop();
-        // no validation for 'version' required
-      }
     }
 
     /**
@@ -1782,13 +1339,13 @@ public class LocatorLauncher extends AbstractLauncher<String> {
             && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), NAME)) {
           throw new IllegalStateException(
               LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
-                  .toLocalizedString("Locator"));
+                  .toLocalizedString(SERVICE_NAME));
         }
 
         if (!CURRENT_DIRECTORY.equals(getWorkingDirectory())) {
           throw new IllegalStateException(
               LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
-                  .toLocalizedString("Locator"));
+                  .toLocalizedString(SERVICE_NAME));
         }
       }
     }
@@ -1981,7 +1538,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     public static LocatorState fromDirectory(final String workingDirectory,
         final String memberName) {
-      LocatorState locatorState =
+      LocatorState locatorState = (LocatorState)
           new LocatorLauncher.Builder().setWorkingDirectory(workingDirectory).build().status();
 
       if (ObjectUtils.equals(locatorState.getMemberName(), memberName)) {

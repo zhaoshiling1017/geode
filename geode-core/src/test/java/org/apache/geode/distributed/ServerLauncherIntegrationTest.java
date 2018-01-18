@@ -117,8 +117,8 @@ public class ServerLauncherIntegrationTest {
     assertThat(builder.getForce()).isTrue();
     assertThat(builder.getHostNameForClients()).isEqualTo("Tucows");
     assertThat(builder.getPid().intValue()).isEqualTo(1234);
-    assertThat(builder.getServerBindAddress()).isEqualTo(InetAddress.getLocalHost());
-    assertThat(builder.getServerPort().intValue()).isEqualTo(11235);
+    assertThat(builder.getBindAddress()).isEqualTo(InetAddress.getLocalHost());
+    assertThat(builder.getPort().intValue()).isEqualTo(11235);
     assertThat(builder.getRedirectOutput()).isTrue();
     assertThat(builder.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
   }
@@ -140,8 +140,8 @@ public class ServerLauncherIntegrationTest {
     assertThat(builder.getHostNameForClients()).isNull();
     assertThat(builder.getMemberName()).isEqualTo("memberOne");
     assertThat(builder.getPid()).isNull();
-    assertThat(builder.getServerBindAddress()).isNull();
-    assertThat(builder.getServerPort().intValue()).isEqualTo(12345);
+    assertThat(builder.getBindAddress()).isNull();
+    assertThat(builder.getPort().intValue()).isEqualTo(12345);
     assertThat(builder.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
   }
 
@@ -240,7 +240,7 @@ public class ServerLauncherIntegrationTest {
     ServerLauncher launcher = new Builder().build();
 
     // then: server port should be the overridden default port
-    assertThat(launcher.getServerPort()).isEqualTo(overriddenPort);
+    assertThat(launcher.getPort()).isEqualTo(overriddenPort);
   }
 
   private String memberNameValidationErrorMessage() {
