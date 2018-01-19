@@ -185,7 +185,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
                 rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
                 updated = true;
                 if (logger.isDebugEnabled()) {
-                  logger.debug("GGG:Updated put key " + ev);
+                  logger.debug("GGG:Updated put key " + ev + ":" + overwriteDestroyed);
                 }
               } else {
                 if (rgn.getVersionVector() != null && ev.getVersionTag() != null) {
