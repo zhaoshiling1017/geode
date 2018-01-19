@@ -159,7 +159,7 @@ public class StartServerCommandTest {
         .setPdxDiskStore("pdxDiskStore").setPdxIgnoreUnreadFields(Boolean.TRUE)
         .setPdxPersistent(Boolean.TRUE).setPdxReadSerialized(Boolean.TRUE)
         .setPdxSerializer(mock(PdxSerializer.class)).setRebalance(Boolean.TRUE)
-        .setRedirectOutput(Boolean.TRUE).setRebalance(true).setServerPort(41214)
+        .setRedirectOutput(Boolean.TRUE).setRebalance(true).setPort(41214)
         .setSocketBufferSize(1024 * 1024).setSpringXmlLocation("/config/spring-server.xml").build();
 
     File gemfirePropertiesFile = spy(mock(File.class));

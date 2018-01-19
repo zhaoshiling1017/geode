@@ -72,7 +72,7 @@ public class StartLocatorCommandTest {
   @Test
   public void testLocatorCommandLineWithRestAPI() throws Exception {
     LocatorLauncher locatorLauncher =
-        new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.START)
+        (LocatorLauncher) new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.START)
             .setMemberName("testLocatorCommandLineWithRestAPI").setBindAddress("localhost")
             .setPort(11111).build();
 
@@ -153,8 +153,9 @@ public class StartLocatorCommandTest {
 
   @Test
   public void testCreateStartLocatorCommandLine() throws Exception {
-    LocatorLauncher locatorLauncher = new LocatorLauncher.Builder().setMemberName("defaultLocator")
-        .setCommand(LocatorLauncher.Command.START).build();
+    LocatorLauncher locatorLauncher =
+        (LocatorLauncher.Builder) (new LocatorLauncher.Builder().setMemberName("defaultLocator"))
+            .setCommand(LocatorLauncher.Command.START).build();
 
     String[] commandLineElements = locatorCommands.createStartLocatorCommandLine(locatorLauncher,
         null, null, new Properties(), null, false, null, null, null);
@@ -188,9 +189,9 @@ public class StartLocatorCommandTest {
   @Test
   public void testCreateStartLocatorCommandLineWithAllOptions() throws Exception {
     LocatorLauncher locatorLauncher =
-        new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.START)
+        (LocatorLauncher) new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.START)
             .setDebug(Boolean.TRUE).setDeletePidFileOnStop(Boolean.TRUE).setForce(Boolean.TRUE)
-            .setHostnameForClients("localhost").setMemberName("customLocator").setPort(10101)
+            .setHostNameForClients("localhost").setMemberName("customLocator").setPort(10101)
             .setRedirectOutput(Boolean.TRUE).build();
 
     File gemfirePropertiesFile = spy(mock(File.class));

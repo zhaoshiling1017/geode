@@ -70,8 +70,8 @@ public class LocatorLauncherJmxManagerLocalRegressionTest
 
   @Test
   public void locatorWithZeroJmxPortCleansUpWhenStopped() throws Exception {
-    startLocator(newBuilder().setDeletePidFileOnStop(true).setMemberName(getUniqueName())
-        .setPort(this.defaultLocatorPort).setRedirectOutput(false)
+    startLocator((LocatorLauncher.Builder) newBuilder().setDeletePidFileOnStop(true)
+        .setMemberName(getUniqueName()).setPort(this.defaultLocatorPort).setRedirectOutput(false)
         .setWorkingDirectory(getWorkingDirectoryPath()).set(LOG_LEVEL, "config")
         .set(ENABLE_CLUSTER_CONFIGURATION, "false").set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_START, "true").set(JMX_MANAGER_PORT, "0"));
@@ -84,8 +84,8 @@ public class LocatorLauncherJmxManagerLocalRegressionTest
 
   @Test
   public void locatorWithNonZeroJmxPortCleansUpWhenStopped() throws Exception {
-    startLocator(newBuilder().setDeletePidFileOnStop(true).setMemberName(getUniqueName())
-        .setPort(this.defaultLocatorPort).setRedirectOutput(false)
+    startLocator((LocatorLauncher.Builder) newBuilder().setDeletePidFileOnStop(true)
+        .setMemberName(getUniqueName()).setPort(this.defaultLocatorPort).setRedirectOutput(false)
         .setWorkingDirectory(getWorkingDirectoryPath()).set(LOG_LEVEL, "config")
         .set(ENABLE_CLUSTER_CONFIGURATION, "false").set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_START, "true").set(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort)));

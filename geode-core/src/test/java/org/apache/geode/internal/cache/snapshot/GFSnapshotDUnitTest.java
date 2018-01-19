@@ -167,7 +167,7 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
     for (String propertyName : properties.stringPropertyNames()) {
       builder.set(propertyName, properties.getProperty(propertyName));
     }
-    LocatorLauncher locatorLauncher = builder.setBindAddress(serverHostName)
+    LocatorLauncher locatorLauncher = (LocatorLauncher) builder.setBindAddress(serverHostName)
         .setHostNameForClients(serverHostName).setMemberName(memberName).setPort(locatorPort)
         .setWorkingDirectory(workingDirectory.getCanonicalPath()).build();
     locatorLauncher.start();

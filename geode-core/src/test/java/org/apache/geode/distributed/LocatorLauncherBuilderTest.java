@@ -186,7 +186,8 @@ public class LocatorLauncherBuilderTest {
 
   @Test
   public void setBindAddressToCanonicalLocalHostUsesValue() throws Exception {
-    Builder builder = new Builder().setBindAddress(InetAddress.getLocalHost().getHostName());
+    Builder builder =
+        (Builder) new Builder().setBindAddress(InetAddress.getLocalHost().getHostName());
 
     assertThat(builder.getBindAddress()).isEqualTo(localHost);
   }
@@ -195,7 +196,7 @@ public class LocatorLauncherBuilderTest {
   public void setBindAddressToLocalHostNameUsesValue() throws Exception {
     String host = InetAddress.getLocalHost().getHostName();
 
-    Builder builder = new Builder().setBindAddress(host);
+    Builder builder = (Builder) new Builder().setBindAddress(host);
 
     assertThat(builder.getBindAddress()).isEqualTo(localHost);
   }
@@ -483,7 +484,7 @@ public class LocatorLauncherBuilderTest {
   public void buildCreatesLocatorLauncherWithBuilderValues() throws Exception {
     Builder builder = new Builder();
 
-    LocatorLauncher launcher = builder.setCommand(Command.START).setDebug(true)
+    LocatorLauncher launcher = (LocatorLauncher) builder.setCommand(Command.START).setDebug(true)
         // <<<<<<< ours
         // .setHostnameForClients("beanstock.vmware.com").setMemberName("Beanstock").setPort(8192)
         // .setRedirectOutput(Boolean.TRUE).build();
@@ -507,7 +508,7 @@ public class LocatorLauncherBuilderTest {
   @Test
   public void buildUsesMemberNameSetInApiProperties() {
     LocatorLauncher launcher =
-        new Builder().setCommand(LocatorLauncher.Command.START).set(NAME, "locatorABC").build();
+        (LocatorLauncher) new Builder().setCommand(Command.START).set(NAME, "locatorABC").build();
 
     assertThat(launcher.getMemberName()).isNull();
     assertThat(launcher.getProperties().getProperty(NAME)).isEqualTo("locatorABC");

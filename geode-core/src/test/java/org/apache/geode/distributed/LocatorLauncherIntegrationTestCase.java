@@ -118,9 +118,9 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
    * Returns a new Builder with helpful defaults for safe testing. If you need a Builder in a test
    * without any of these defaults then simply use {@code new Builder()} instead.
    */
-  protected Builder newBuilder() {
-    return new Builder().setMemberName(getUniqueName()).setRedirectOutput(true)
-        .setWorkingDirectory(getWorkingDirectoryPath())
+  protected LocatorLauncher.Builder newBuilder() {
+    return (LocatorLauncher.Builder) new Builder().setMemberName(getUniqueName())
+        .setRedirectOutput(true).setWorkingDirectory(getWorkingDirectoryPath())
         .set(CLUSTER_CONFIGURATION_DIR, getClusterConfigDirectoryPath())
         .set(DISABLE_AUTO_RECONNECT, "true").set(LOG_LEVEL, "config").set(MCAST_PORT, "0");
   }
@@ -129,7 +129,7 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
     return awaitStart(newBuilder());
   }
 
-  protected LocatorLauncher startLocator(final Builder builder) {
+  protected LocatorLauncher startLocator(final LocatorLauncher.Builder builder) {
     return awaitStart(builder);
   }
 

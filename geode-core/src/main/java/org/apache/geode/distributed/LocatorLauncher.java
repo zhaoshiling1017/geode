@@ -1245,51 +1245,51 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * The following methods call the super class but override its method so the correct type can be
      * returned.
      */
-    public Builder setDebug(final Boolean debug) {
-      super.setDebug(debug);
-      return this;
-    }
+    // public Builder setDebug(final Boolean debug) {
+    // super.setDebug(debug);
+    // return this;
+    // }
 
-    public Builder setDeletePidFileOnStop(final Boolean deletePidFileOnStop) {
-      super.setDeletePidFileOnStop(deletePidFileOnStop);
-      return this;
-    }
+    // public Builder setDeletePidFileOnStop(final Boolean deletePidFileOnStop) {
+    // super.setDeletePidFileOnStop(deletePidFileOnStop);
+    // return this;
+    // }
 
-    public Builder setForce(final Boolean force) {
-      super.setForce(force);
-      return this;
-    }
+    // public Builder setForce(final Boolean force) {
+    // super.setForce(force);
+    // return this;
+    // }
 
-    public Builder setHelp(final Boolean help) {
-      super.setHelp(help);
-      return this;
-    }
+    // public Builder setHelp(final Boolean help) {
+    // super.setHelp(help);
+    // return this;
+    // }
 
-    public Builder setBindAddress(final String bindAddress) {
-      super.setBindAddress(bindAddress);
-      return this;
-    }
+    // public Builder setBindAddress(final String bindAddress) {
+    // super.setBindAddress(bindAddress);
+    // return this;
+    // }
 
-    public Builder setHostNameForClients(final String hostNameForClients) {
-      super.setHostNameForClients(hostNameForClients);
-      return this;
-    }
+    // public Builder setHostNameForClients(final String hostNameForClients) {
+    // super.setHostNameForClients(hostNameForClients);
+    // return this;
+    // }
 
-    public Builder setMemberName(final String memberName) {
-      super.setMemberName(memberName);
-      return this;
-    }
+    // public Builder setMemberName(final String memberName) {
+    // super.setMemberName(memberName);
+    // return this;
+    // }
 
-    public Builder setPid(final Integer pid) {
-      super.setPid(pid);
-      return this;
-    }
+    // public Builder setPid(final Integer pid) {
+    // super.setPid(pid);
+    // return this;
+    // }
 
-    public Builder setPort(final Integer port) {
-      super.setPort(port);
-      return this;
-    }
-
+    // public Builder setPort(final Integer port) {
+    // super.setPort(port);
+    // return this;
+    // }
+    //
     /**
      * Gets the port number used by the Locator to listen for client requests. If the port was not
      * specified, then the default Locator port (10334) is returned.
@@ -1301,20 +1301,20 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return defaultIfNull(port, getDefaultPort());
     }
 
-    public Builder setRedirectOutput(final Boolean redirectOutput) {
-      super.setRedirectOutput(redirectOutput);
-      return this;
-    }
+    // public Builder setRedirectOutput(final Boolean redirectOutput) {
+    // super.setRedirectOutput(redirectOutput);
+    // return this;
+    // }
 
-    public Builder setWorkingDirectory(final String workingDirectory) {
-      super.setWorkingDirectory(workingDirectory);
-      return this;
-    }
+    // public Builder setWorkingDirectory(final String workingDirectory) {
+    // super.setWorkingDirectory(workingDirectory);
+    // return this;
+    // }
 
-    public Builder set(final String propertyName, final String propertyValue) {
-      super.set(propertyName, propertyValue);
-      return this;
-    }
+    // public Builder set(final String propertyName, final String propertyValue) {
+    // super.set(propertyName, propertyValue);
+    // return this;
+    // }
 
     boolean isBindAddressSpecified() {
       return (getBindAddress() != null);

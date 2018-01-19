@@ -132,7 +132,8 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   public void statusWithPidReturnsOnlineWithDetails() throws Exception {
     givenRunningLocator();
 
-    LocatorState locatorState = new Builder().setPid(getLocatorPid()).build().status();
+    LocatorState locatorState =
+        (LocatorLauncher.LocatorState) new Builder().setPid(getLocatorPid()).build().status();
 
     assertThat(locatorState.getStatus()).isEqualTo(ONLINE);
     assertThat(locatorState.getClasspath()).isEqualTo(getClassPath());
@@ -151,8 +152,8 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   public void statusWithWorkingDirectoryReturnsOnlineWithDetails() throws Exception {
     givenRunningLocator();
 
-    LocatorState locatorState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+    LocatorState locatorState = (LocatorLauncher.LocatorState) new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath()).build().status();
 
     assertThat(locatorState.getStatus()).isEqualTo(ONLINE);
     assertThat(locatorState.getClasspath()).isEqualTo(getClassPath());
@@ -171,7 +172,8 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   public void statusWithEmptyPidFileThrowsIllegalArgumentException() throws Exception {
     givenEmptyPidFile();
 
-    LocatorLauncher launcher = new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build();
+    LocatorLauncher launcher =
+        (LocatorLauncher) new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build();
 
     assertThatThrownBy(() -> launcher.status()).isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Invalid pid 'null' found in");
@@ -181,8 +183,8 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   public void statusWithEmptyWorkingDirectoryReturnsNotRespondingWithDetails() throws Exception {
     givenEmptyWorkingDirectory();
 
-    LocatorState locatorState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+    LocatorState locatorState = (LocatorLauncher.LocatorState) new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath()).build().status();
 
     assertThat(locatorState.getStatus()).isEqualTo(NOT_RESPONDING);
     assertThat(locatorState.getClasspath()).isNull();
@@ -203,8 +205,8 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   public void statusWithStalePidFileReturnsNotResponding() throws Exception {
     givenPidFile(fakePid);
 
-    LocatorState locatorState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+    LocatorState locatorState = (LocatorLauncher.LocatorState) new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath()).build().status();
 
     assertThat(locatorState.getStatus()).isEqualTo(NOT_RESPONDING);
   }
@@ -213,7 +215,8 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   public void stopWithPidReturnsStopped() throws Exception {
     givenRunningLocator();
 
-    LocatorState serverState = new Builder().setPid(getLocatorPid()).build().stop();
+    LocatorState serverState =
+        (LocatorLauncher.LocatorState) new Builder().setPid(getLocatorPid()).build().stop();
 
     assertThat(serverState.getStatus()).isEqualTo(STOPPED);
   }
@@ -240,8 +243,8 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   public void stopWithWorkingDirectoryReturnsStopped() throws Exception {
     givenRunningLocator();
 
-    LocatorState serverState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
+    LocatorState serverState = (LocatorLauncher.LocatorState) new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
 
     assertThat(serverState.getStatus()).isEqualTo(STOPPED);
   }

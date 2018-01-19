@@ -93,8 +93,8 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
             subdir.mkdir();
             assertTrue(subdir.exists() && subdir.isDirectory());
 
-            final Builder builder = new Builder().setMemberName(name).setPort(ports[whichvm])
-                .setRedirectOutput(true).setWorkingDirectory(name);
+            final Builder builder = (Builder) new Builder().setMemberName(name)
+                .setPort(ports[whichvm]).setRedirectOutput(true).setWorkingDirectory(name);
 
             launcher = builder.build();
             assertEquals(Status.ONLINE, launcher.start().getStatus());
@@ -211,8 +211,8 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
             subdir.mkdir();
             assertTrue(subdir.exists() && subdir.isDirectory());
 
-            final Builder builder = new Builder().setMemberName(name).setPort(ports[whichvm])
-                .setRedirectOutput(true).setWorkingDirectory(name);
+            final Builder builder = (Builder) new Builder().setMemberName(name)
+                .setPort(ports[whichvm]).setRedirectOutput(true).setWorkingDirectory(name);
 
             launcher = builder.build();
             assertEquals(Status.ONLINE, launcher.start().getStatus());

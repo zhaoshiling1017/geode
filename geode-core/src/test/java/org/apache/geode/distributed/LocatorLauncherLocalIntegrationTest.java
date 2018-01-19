@@ -78,14 +78,14 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
 
   @Test
   public void startWithPortUsesPort() throws Exception {
-    LocatorLauncher launcher = startLocator(newBuilder().setPort(defaultLocatorPort));
+    LocatorLauncher launcher = startLocator((Builder) newBuilder().setPort(defaultLocatorPort));
 
     assertThat(launcher.getLocator().getPort()).isEqualTo(defaultLocatorPort);
   }
 
   @Test
   public void startWithPortZeroUsesAnEphemeralPort() throws Exception {
-    LocatorLauncher launcher = startLocator(newBuilder().setPort(0));
+    LocatorLauncher launcher = startLocator((Builder) newBuilder().setPort(0));
 
     assertThat(launcher.getLocator().getPort()).isGreaterThan(0);
     assertThat(launcher.getLocator().isPeerLocator()).isTrue();
@@ -93,7 +93,7 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
 
   @Test
   public void startUsesBuilderValues() throws Exception {
-    LocatorLauncher launcher = startLocator(newBuilder().setPort(nonDefaultLocatorPort));
+    LocatorLauncher launcher = startLocator((Builder) newBuilder().setPort(nonDefaultLocatorPort));
 
     InternalLocator locator = launcher.getLocator();
     assertThat(locator.getPort()).isEqualTo(nonDefaultLocatorPort);
@@ -155,7 +155,7 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   public void startWithLocatorPortInUseFailsWithBindException() throws Exception {
     givenServerPortInUse(nonDefaultLocatorPort);
 
-    launcher = new Builder().setPort(nonDefaultLocatorPort).build();
+    launcher = (LocatorLauncher) new Builder().setPort(nonDefaultLocatorPort).build();
 
     assertThatThrownBy(() -> this.launcher.start()).isInstanceOf(RuntimeException.class)
         .hasCauseInstanceOf(BindException.class);
@@ -165,7 +165,7 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   public void statusWithPidReturnsOnlineWithDetails() throws Exception {
     givenRunningLocator();
 
-    LocatorState locatorState = new Builder().setPid(localPid).build().status();
+    LocatorState locatorState = (LocatorState) new Builder().setPid(localPid).build().status();
 
     assertThat(locatorState.getStatus()).isEqualTo(ONLINE);
     assertThat(locatorState.getClasspath()).isEqualTo(getClassPath());
@@ -184,8 +184,8 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   public void statusWithWorkingDirectoryReturnsOnlineWithDetails() throws Exception {
     givenRunningLocator();
 
-    LocatorState locatorState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+    LocatorState locatorState = (LocatorState) new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath()).build().status();
 
     assertThat(locatorState.getStatus()).isEqualTo(ONLINE);
     assertThat(locatorState.getClasspath()).isEqualTo(getClassPath());
@@ -204,7 +204,8 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   public void statusWithEmptyPidFileThrowsIllegalArgumentException() throws Exception {
     givenEmptyPidFile();
 
-    LocatorLauncher launcher = new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build();
+    LocatorLauncher launcher =
+        (LocatorLauncher) new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build();
 
     assertThatThrownBy(launcher::status).isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Invalid pid 'null' found in");
@@ -214,8 +215,8 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   public void statusWithEmptyWorkingDirectoryReturnsNotRespondingWithDetails() throws Exception {
     givenEmptyWorkingDirectory();
 
-    LocatorState locatorState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+    LocatorState locatorState = (LocatorState) new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath()).build().status();
 
     assertThat(locatorState.getStatus()).isEqualTo(NOT_RESPONDING);
     assertThat(locatorState.getClasspath()).isNull();
@@ -238,8 +239,8 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   public void statusWithStalePidFileReturnsNotResponding() throws Exception {
     givenPidFile(fakePid);
 
-    LocatorState locatorState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+    LocatorState locatorState = (LocatorState) new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath()).build().status();
 
     assertThat(locatorState.getStatus()).isEqualTo(NOT_RESPONDING);
   }
@@ -248,14 +249,14 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
   public void stopWithPidReturnsStopped() throws Exception {
     givenRunningLocator();
 
-    LocatorState locatorState = new Builder().setPid(localPid).build().stop();
+    LocatorState locatorState = (LocatorState) new Builder().setPid(localPid).build().stop();
 
     assertThat(locatorState.getStatus()).isEqualTo(STOPPED);
   }
 
   @Test
   public void stopWithPidDeletesPidFile() throws Exception {
-    givenRunningLocator(newBuilder().setDeletePidFileOnStop(true));
+    givenRunningLocator((Builder) newBuilder().setDeletePidFileOnStop(true));
 
     new Builder().setPid(localPid).build().stop();
 
@@ -267,14 +268,14 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
     givenRunningLocator();
 
     LocatorState locatorState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
+        (LocatorState) new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
 
     assertThat(locatorState.getStatus()).isEqualTo(STOPPED);
   }
 
   @Test
   public void stopWithWorkingDirectoryDeletesPidFile() throws Exception {
-    givenRunningLocator(newBuilder().setDeletePidFileOnStop(true));
+    givenRunningLocator((Builder) newBuilder().setDeletePidFileOnStop(true));
 
     new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
 

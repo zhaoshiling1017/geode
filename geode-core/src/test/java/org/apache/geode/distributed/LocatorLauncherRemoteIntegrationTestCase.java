@@ -175,7 +175,8 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
 
   private LocatorLauncher awaitStart(final File workingDirectory) {
     try {
-      launcher = new Builder().setWorkingDirectory(workingDirectory.getCanonicalPath()).build();
+      launcher = (LocatorLauncher) (new Builder()
+          .setWorkingDirectory(workingDirectory.getCanonicalPath()).build());
       awaitStart(launcher);
       assertThat(process.isAlive()).isTrue();
       return launcher;

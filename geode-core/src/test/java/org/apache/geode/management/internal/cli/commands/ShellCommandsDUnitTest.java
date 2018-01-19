@@ -92,8 +92,8 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
 
     assertTrue(workingDirectory.isDirectory());
 
-    locatorLauncher = new LocatorLauncher.Builder().setBindAddress(null).setForce(true)
-        .setMemberName(pathname).setPort(locatorPort)
+    locatorLauncher = (LocatorLauncher) new LocatorLauncher.Builder().setBindAddress(null)
+        .setForce(true).setMemberName(pathname).setPort(locatorPort)
         .setWorkingDirectory(IOUtils.tryGetCanonicalPathElseGetAbsolutePath(workingDirectory))
         .build();
 

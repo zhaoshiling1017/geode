@@ -1720,11 +1720,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Sets the port on which the Server will listen for and accept cache client connections in a
      * client/server topology.
      *
-     * @param serverPort an Integer value specifying the port the Server will listen on and accept
-     *        cache client connections in a client/server topology.
+     * @param port an Integer value specifying the port the Server will listen on and accept cache
+     *        client connections in a client/server topology.
      * @return this Builder instance.
      * @throws IllegalArgumentException if the port number is not valid.
-     * @see #getServerPort()
+     * @see #getPort()
      */
     @Override
     public Builder setPort(final Integer port) {
