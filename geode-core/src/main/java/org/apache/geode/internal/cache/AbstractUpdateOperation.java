@@ -114,7 +114,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
       boolean doUpdate = true; // start with assumption we have key and need value
       if (shouldDoRemoteCreate(rgn, ev)) {
         if (logger.isDebugEnabled()) {
-          logger.debug("doPutOrCreate: attempting to create entry");
+          logger.debug("doPutOrCreate: attempting to create entry" + ev);
         }
         final long startPut = CachePerfStats.getStatTime();
         final boolean isBucket = rgn.isUsedForPartitionedRegionBucket();
@@ -132,6 +132,9 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
             // we did a create, or replayed a create event
             doUpdate = false;
             updated = true;
+            if (logger.isDebugEnabled()) {
+              logger.debug("GGG:Created put key " + ev);
+            }
           } else { // already exists. If it was blocked by the DESTROYED token, then
             // do no update.
             if (ev.oldValueIsDestroyedToken()) {
@@ -140,6 +143,9 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
                     (InternalDistributedMember) ev.getDistributedMember(), ev.getVersionTag());
               }
               doUpdate = false;
+              logger.info("GGG:oldValueIsDestroyedToken,doUpdate=false:" + ev);
+            } else {
+              logger.info("GGG:oldValueIsDestroyedToken false, doUpdate=true:" + ev);
             }
           }
         } finally {
@@ -165,8 +171,8 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
             if (rgn.basicUpdate(ev, false/* ifNew */, true/* ifOld */, lastMod,
                 overwriteDestroyed)) {
               rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
-              if (logger.isTraceEnabled()) {
-                logger.trace("Processing put key {} in region {}", ev.getKey(), rgn.getFullPath());
+              if (logger.isDebugEnabled()) {
+                logger.debug("Processing put key {} in region {}", ev.getKey(), rgn.getFullPath());
               }
               updated = true;
             } else { // key not here or blocked by DESTROYED token
@@ -178,6 +184,9 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
                     overwriteDestroyed);
                 rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
                 updated = true;
+                if (logger.isDebugEnabled()) {
+                  logger.debug("GGG:Updated put key " + ev);
+                }
               } else {
                 if (rgn.getVersionVector() != null && ev.getVersionTag() != null) {
                   rgn.getVersionVector().recordVersion(
