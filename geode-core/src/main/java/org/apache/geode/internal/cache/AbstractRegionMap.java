@@ -2856,6 +2856,8 @@ public abstract class AbstractRegionMap implements RegionMap {
                     if (tag != null && tag.isTimeStampUpdated()) {
                       // Notify gateways of new time-stamp.
                       owner.notifyTimestampsToGateways(event);
+                    } else {
+                      logger.info("GGG: not to notifyTimestampsToGateways:" + event);
                     }
                     throw ccme;
                   }

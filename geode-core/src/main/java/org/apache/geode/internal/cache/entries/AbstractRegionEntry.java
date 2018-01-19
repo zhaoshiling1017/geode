@@ -1761,6 +1761,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
             }
             r.getCachePerfStats().incConflatedEventsCount();
             persistConflictingTag(r, tag);
+            logger.info("GGG:before ConcurrentCacheModificationException:" + event);
             throw new ConcurrentCacheModificationException("conflicting event detected");
           }
         }
