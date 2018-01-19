@@ -133,7 +133,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
             doUpdate = false;
             updated = true;
             if (logger.isDebugEnabled()) {
-              logger.debug("GGG:Created put key " + ev);
+              logger.debug("GGG:Created put key ");
             }
           } else { // already exists. If it was blocked by the DESTROYED token, then
             // do no update.
@@ -143,9 +143,6 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
                     (InternalDistributedMember) ev.getDistributedMember(), ev.getVersionTag());
               }
               doUpdate = false;
-              logger.info("GGG:oldValueIsDestroyedToken,doUpdate=false:" + ev);
-            } else {
-              logger.info("GGG:oldValueIsDestroyedToken false, doUpdate=true:" + ev);
             }
           }
         } finally {

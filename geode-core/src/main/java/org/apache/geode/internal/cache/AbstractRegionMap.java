@@ -2820,6 +2820,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                 }
                 // overwrite destroyed?
                 if (!continueOverwriteDestroyed(re, event, overwriteDestroyed, ifNew)) {
+                  logger.info("GGG:not continueOverwriteDestroyed");
                   return null;
                 }
                 // check expectedOldValue
@@ -2842,11 +2843,9 @@ public abstract class AbstractRegionMap implements RegionMap {
                                                                         // set
                         || !re.isRemoved() || replaceOnClient) {
                       // update
-                      logger.info("GGG:before updateEntry:" + event);
                       updateEntry(event, requireOldValue, oldValueForDelta, re);
                     } else {
                       // create
-                      logger.info("GGG:before createEntry:" + event);
                       createEntry(event, owner, re);
                     }
                     owner.recordEvent(event);
