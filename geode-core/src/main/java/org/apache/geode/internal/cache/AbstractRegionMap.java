@@ -2820,13 +2820,10 @@ public abstract class AbstractRegionMap implements RegionMap {
                 }
                 // overwrite destroyed?
                 if (!continueOverwriteDestroyed(re, event, overwriteDestroyed, ifNew)) {
-                  logger.info("GGG:not continueOverwriteDestroyed");
                   return null;
                 }
                 // check expectedOldValue
                 if (!satisfiesExpectedOldValue(event, re, expectedOldValue, replaceOnClient)) {
-                  logger.info("GGG:not satisfiesExpectedOldValue:" + event + ":" + expectedOldValue
-                      + ":" + re);
                   return null;
                 }
                 // invoke cacheWriter
@@ -2859,8 +2856,6 @@ public abstract class AbstractRegionMap implements RegionMap {
                     if (tag != null && tag.isTimeStampUpdated()) {
                       // Notify gateways of new time-stamp.
                       owner.notifyTimestampsToGateways(event);
-                    } else {
-                      logger.info("GGG: not to notifyTimestampsToGateways:" + event);
                     }
                     throw ccme;
                   }
@@ -3092,12 +3087,10 @@ public abstract class AbstractRegionMap implements RegionMap {
       if (!_getOwner().isInitialized()
           && (oldValueInVM == Token.DESTROYED || oldValueInVM == Token.TOMBSTONE)) {
         event.setOldValueDestroyedToken();
-        logger.info("GGG:1continueOverwriteDestroyed:" + overwriteDestroyed + ":" + oldValueInVM);
         return false;
       }
     }
     if (ifNew && !Token.isRemoved(oldValueInVM)) {
-      logger.info("GGG:2continueOverwriteDestroyed:" + overwriteDestroyed + ":" + oldValueInVM);
       return false;
     }
     return true;
