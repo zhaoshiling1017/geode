@@ -1799,6 +1799,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
       // The new value in event is not from GII, even it could be tombstone
       basicProcessVersionTag(r, tag, false, eventHasDelta, dmId, originator, conflictCheck);
     } catch (ConcurrentCacheModificationException ex) {
+      logger.info("GGG:ARE after set CME:" + event, new Exception());
       event.isConcurrencyConflict(true);
       throw ex;
     }

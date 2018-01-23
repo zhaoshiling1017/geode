@@ -2853,8 +2853,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               logger.debug("caught concurrent modification attempt when applying {}", event);
             }
             notifyBridgeClients(event);
-            notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
-                : EnumListenerEvent.AFTER_CREATE, event);
+            logger.info("GGG:findObjectInSystem:" + event);
+            // notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
+            // : EnumListenerEvent.AFTER_CREATE, event);
           }
           if (!getDataView().isDeferredStats()) {
             getCachePerfStats().endPut(startPut, event.isOriginRemote());

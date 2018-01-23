@@ -1183,7 +1183,10 @@ public abstract class AbstractRegionMap implements RegionMap {
                               true/* conflict with clear */, duringRI, true);
                           doPart3 = true;
                         } catch (ConcurrentCacheModificationException ccme) {
-                          event.isConcurrencyConflict(true);
+                          if (!event.isConcurrencyConflict()) {
+                            logger.info("GGG:destroy1:" + event, new Exception());
+                            event.isConcurrencyConflict(true);
+                          }
                           VersionTag tag = event.getVersionTag();
                           if (tag != null && tag.isTimeStampUpdated()) {
                             // Notify gateways of new time-stamp.
@@ -1237,6 +1240,10 @@ public abstract class AbstractRegionMap implements RegionMap {
                             true /* conflict with clear */, duringRI, true);
                         doPart3 = true;
                       } catch (ConcurrentCacheModificationException ccme) {
+                        if (!event.isConcurrencyConflict()) {
+                          logger.info("GGG:destroy2:" + event, new Exception());
+                          event.isConcurrencyConflict(true);
+                        }
                         VersionTag tag = event.getVersionTag();
                         if (tag != null && tag.isTimeStampUpdated()) {
                           // Notify gateways of new time-stamp.
@@ -1388,6 +1395,10 @@ public abstract class AbstractRegionMap implements RegionMap {
                           event.setVersionTag(getVersionTagFromStamp(tombstone.getVersionStamp()));
                         }
                       } catch (ConcurrentCacheModificationException ccme) {
+                        if (!event.isConcurrencyConflict()) {
+                          logger.info("GGG:destroy3:" + event, new Exception());
+                          event.isConcurrencyConflict(true);
+                        }
                         VersionTag tag = event.getVersionTag();
                         if (tag != null && tag.isTimeStampUpdated()) {
                           // Notify gateways of new time-stamp.
@@ -1542,6 +1553,10 @@ public abstract class AbstractRegionMap implements RegionMap {
                 }
               } // synchronized re
             } catch (ConcurrentCacheModificationException ccme) {
+              if (!event.isConcurrencyConflict()) {
+                logger.info("GGG:destroy4:" + event, new Exception());
+                event.isConcurrencyConflict(true);
+              }
               VersionTag tag = event.getVersionTag();
               if (tag != null && tag.isTimeStampUpdated()) {
                 // Notify gateways of new time-stamp.
@@ -2093,6 +2108,10 @@ public abstract class AbstractRegionMap implements RegionMap {
                   }
                 } // !opCompleted
               } catch (ConcurrentCacheModificationException ccme) {
+                if (!event.isConcurrencyConflict()) {
+                  logger.info("GGG:invalidate1:" + event, new Exception());
+                  event.isConcurrencyConflict(true);
+                }
                 event.isConcurrencyConflict(true);
                 VersionTag tag = event.getVersionTag();
                 if (tag != null && tag.isTimeStampUpdated()) {
@@ -2174,6 +2193,10 @@ public abstract class AbstractRegionMap implements RegionMap {
                           // that's okay - when writing a tombstone into a disk, the
                           // region has been cleared (including this tombstone)
                         } catch (ConcurrentCacheModificationException ccme) {
+                          if (!event.isConcurrencyConflict()) {
+                            logger.info("GGG:invalidate2:" + event, new Exception());
+                            event.isConcurrencyConflict(true);
+                          }
                           VersionTag tag = event.getVersionTag();
                           if (tag != null && tag.isTimeStampUpdated()) {
                             // Notify gateways of new time-stamp.
@@ -2249,6 +2272,10 @@ public abstract class AbstractRegionMap implements RegionMap {
                         _getOwner().recordEvent(event);
                         clearOccured = true;
                       } catch (ConcurrentCacheModificationException ccme) {
+                        if (!event.isConcurrencyConflict()) {
+                          logger.info("GGG:invalidate3:" + event, new Exception());
+                          event.isConcurrencyConflict(true);
+                        }
                         VersionTag tag = event.getVersionTag();
                         if (tag != null && tag.isTimeStampUpdated()) {
                           // Notify gateways of new time-stamp.
@@ -2851,7 +2878,10 @@ public abstract class AbstractRegionMap implements RegionMap {
                     clearOccured = true;
                     owner.recordEvent(event);
                   } catch (ConcurrentCacheModificationException ccme) {
-                    event.isConcurrencyConflict(true);
+                    if (!event.isConcurrencyConflict()) {
+                      logger.info("GGG:basicPut:" + event, new Exception());
+                      event.isConcurrencyConflict(true);
+                    }
                     VersionTag tag = event.getVersionTag();
                     if (tag != null && tag.isTimeStampUpdated()) {
                       // Notify gateways of new time-stamp.
