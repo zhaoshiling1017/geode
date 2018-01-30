@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 
 import org.apache.geode.cache.LowMemoryException;
@@ -41,7 +40,7 @@ import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -149,7 +148,7 @@ public class ExecuteFunction extends BaseCommand {
         context = new FunctionContextImpl(cache, functionObject.getId(), args, resultSender);
       }
 
-      HandShake handShake = (HandShake) serverConnection.getHandshake();
+      Handshake handShake = (Handshake) serverConnection.getHandshake();
       int earlierClientReadTimeout = handShake.getClientReadTimeout();
       handShake.setClientReadTimeout(0);
       try {

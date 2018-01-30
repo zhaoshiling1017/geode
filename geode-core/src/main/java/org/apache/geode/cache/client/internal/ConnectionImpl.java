@@ -37,7 +37,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.tier.ServerHandshake;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -87,7 +87,7 @@ public class ConnectionImpl implements Connection {
 
   private long connectionID = Connection.DEFAULT_CONNECTION_ID;
 
-  private HandShake handShake;
+  private ServerHandshake handshake;
 
   public ConnectionImpl(InternalDistributedSystem ds, CancelCriterion cancelCriterion) {
     this.ds = ds;
@@ -100,7 +100,7 @@ public class ConnectionImpl implements Connection {
   }
 
   public ServerQueueStatus connect(EndpointManager endpointManager, ServerLocation location,
-      HandShake handShake, int socketBufferSize, int handShakeTimeout, int readTimeout,
+      ServerHandshake handShake, int socketBufferSize, int handShakeTimeout, int readTimeout,
       CommunicationMode communicationMode, GatewaySender sender, SocketCreator sc)
       throws IOException {
     theSocket = sc.connectForClient(location.getHostName(), location.getPort(), handShakeTimeout,
@@ -310,12 +310,16 @@ public class ConnectionImpl implements Connection {
     return this.connectionID;
   }
 
-  protected HandShake getHandShake() {
-    return handShake;
+  protected byte[] encryptBytes(byte[] messageBytes) throws Exception {
+    return handshake.getEncryptor().encryptBytes(messageBytes);
   }
 
-  protected void setHandShake(HandShake handShake) {
-    this.handShake = handShake;
+  protected byte[] decryptBytes(byte[] messageBytes) throws Exception {
+    return handshake.getEncryptor().decryptBytes(messageBytes);
+  }
+
+  protected void setHandshake(ServerHandshake handshake) {
+    this.handshake = handshake;
   }
 
   /**

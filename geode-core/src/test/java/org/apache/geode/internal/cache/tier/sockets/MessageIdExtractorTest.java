@@ -40,7 +40,7 @@ public class MessageIdExtractorTest {
   Message requestMessage;
 
   @Mock
-  HandShake handshake;
+  Handshake handshake;
 
   private MessageIdExtractor messageIdExtractor;
 

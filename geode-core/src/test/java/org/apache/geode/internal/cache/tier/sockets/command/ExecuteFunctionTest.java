@@ -49,7 +49,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -101,7 +101,7 @@ public class ExecuteFunctionTest {
   @Mock
   private AcceptorImpl acceptor;
   @Mock
-  private HandShake handShake;
+  private Handshake handShake;
   @Mock
   private InternalResourceManager internalResourceManager;
   @Mock

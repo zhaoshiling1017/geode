@@ -73,7 +73,7 @@ public class ServerConnectionTest {
   private Message requestMsg;
 
   @Mock
-  private HandShake handshake;
+  private Handshake handshake;
 
   @Mock
   private MessageIdExtractor messageIdExtractor;
@@ -141,7 +141,7 @@ public class ServerConnectionTest {
     assertThat(serverConnection.getRequestMessage()).isSameAs(requestMsg);
     when(requestMsg.isSecureMode()).thenReturn(true);
 
-    when(messageIdExtractor.getUniqueIdFromMessage(any(Message.class), any(HandShake.class),
+    when(messageIdExtractor.getUniqueIdFromMessage(any(Message.class), any(Handshake.class),
         anyLong())).thenReturn(uniqueIdFromMessage);
     serverConnection.setMessageIdExtractor(messageIdExtractor);
 
@@ -215,7 +215,7 @@ public class ServerConnectionTest {
     protected void doHandshake() {
       ClientProxyMembershipID proxyID = mock(ClientProxyMembershipID.class);
       when(proxyID.getDistributedMember()).thenReturn(mock(InternalDistributedMember.class));
-      HandShake handShake = mock(HandShake.class);
+      Handshake handShake = mock(Handshake.class);
       when(handShake.getMembership()).thenReturn(proxyID);
       when(handShake.getVersion()).thenReturn(Version.CURRENT);
 

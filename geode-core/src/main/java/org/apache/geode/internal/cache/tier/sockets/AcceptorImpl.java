@@ -1442,7 +1442,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
                 Integer.valueOf(this.maxConnections)}));
         if (communicationMode.expectsConnectionRefusalMessage()) {
           try {
-            ServerHandShakeProcessor.refuse(socket.getOutputStream(),
+            ServerHandshakeProcessor.refuse(socket.getOutputStream(),
                 LocalizedStrings.AcceptorImpl_EXCEEDED_MAX_CONNECTIONS_0
                     .toLocalizedString(Integer.valueOf(this.maxConnections)));
           } catch (Exception ex) {
@@ -1480,7 +1480,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
             LocalizedStrings.AcceptorImpl_REJECTED_CONNECTION_FROM_0_BECAUSE_REQUEST_REJECTED_BY_POOL,
             new Object[] {serverConn}));
         try {
-          ServerHandShakeProcessor.refuse(socket.getOutputStream(),
+          ServerHandshakeProcessor.refuse(socket.getOutputStream(),
               LocalizedStrings.AcceptorImpl_EXCEEDED_MAX_CONNECTIONS_0
                   .toLocalizedString(Integer.valueOf(this.maxConnections)));
 
