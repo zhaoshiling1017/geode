@@ -130,7 +130,7 @@ public class EncryptorImpl implements Encryptor{
     this.appSecureMode = encryptor.appSecureMode;
   }
 
-  EncryptorImpl(LogWriter logWriter) {
+  public EncryptorImpl(LogWriter logWriter) {
     this.logWriter = logWriter;
   }
 
@@ -384,15 +384,7 @@ public class EncryptorImpl implements Encryptor{
 
       // Expect the alias and signature in the reply
       acceptanceCode = dis.readByte();
-      if (acceptanceCode != REPLY_OK && acceptanceCode != REPLY_AUTH_NOT_REQUIRED) {
-        // Ignore the useless data
-        dis.readByte();
-        dis.readInt();
-        if (!isNotification) {
-          DataSerializer.readByteArray(dis);
-        }
-        readMessage(dis, dos, acceptanceCode, member);
-      } else if (acceptanceCode == REPLY_OK) {
+      if (acceptanceCode == REPLY_OK) {
         // Get the public key of the other side
         keyBytes = DataSerializer.readByteArray(dis);
         if (requireAuthentication) {
@@ -448,10 +440,11 @@ public class EncryptorImpl implements Encryptor{
     return acceptanceCode;
   }
 
-  void writeEncryptedCredentials(DataOutputStream dos, DataInputStream dis,
+  byte writeEncryptedCredentials(DataOutputStream dos, DataInputStream dis,
                                  Properties p_credentials,
                                  boolean isNotification, DistributedMember member,
                                  HeapDataOutputStream heapdos) throws IOException {
+    byte acceptanceCode;
     try {
       logWriter.fine("HandShake: using Diffie-Hellman key exchange with algo " + dhSKAlgo);
       boolean requireAuthentication =
@@ -481,16 +474,8 @@ public class EncryptorImpl implements Encryptor{
       dos.flush();
 
       // Expect the alias and signature in the reply
-      byte acceptanceCode = dis.readByte();
-      if (acceptanceCode != REPLY_OK && acceptanceCode != REPLY_AUTH_NOT_REQUIRED) {
-        // Ignore the useless data
-        dis.readByte();
-        dis.readInt();
-        if (!isNotification) {
-          DataSerializer.readByteArray(dis);
-        }
-        readMessage(dis, dos, acceptanceCode, member);
-      } else if (acceptanceCode == REPLY_OK) {
+      acceptanceCode = dis.readByte();
+      if (acceptanceCode == REPLY_OK) {
         // Get the public key of the other side
         keyBytes = DataSerializer.readByteArray(dis);
         if (requireAuthentication) {
@@ -546,6 +531,7 @@ public class EncryptorImpl implements Encryptor{
       throw new AuthenticationFailedException("HandShake failed in Diffie-Hellman key exchange",
           ex);
     }
+    return acceptanceCode;
   }
 
   void readEncryptedCredentials(DataInputStream dis, DataOutputStream dos,

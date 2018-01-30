@@ -57,6 +57,7 @@ import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -98,6 +99,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
     this.replyCode = REPLY_OK;
     setOverrides();
     this.credentials = null;
+    this.encryptor = new EncryptorImpl(distributedSystem.getSecurityLogWriter());
   }
 
   /**
@@ -454,6 +456,6 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
    * @return
    */
   public Encryptor getEncryptor() {
-    return this;
+    return encryptor;
   }
 }

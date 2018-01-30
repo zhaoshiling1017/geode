@@ -231,7 +231,7 @@ public class ServerConnectionTest {
 
       long fakeId = -1;
       MessageIdExtractor extractor = mock(MessageIdExtractor.class);
-      when(extractor.getUniqueIdFromMessage(getRequestMessage(), handshake,
+      when(extractor.getUniqueIdFromMessage(getRequestMessage(), handshake.getEncryptor(),
           Connection.DEFAULT_CONNECTION_ID)).thenReturn(fakeId);
       setMessageIdExtractor(extractor);
     }

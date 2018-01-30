@@ -205,6 +205,15 @@ public abstract class Handshake {
     }
     byte acceptanceCode = -1;
     acceptanceCode = encryptor.writeEncryptedCredential(dos, dis, isNotification, member, heapdos);
+    if (acceptanceCode != REPLY_OK && acceptanceCode != REPLY_AUTH_NOT_REQUIRED) {
+      // Ignore the useless data
+      dis.readByte();
+      dis.readInt();
+      if (!isNotification) {
+        DataSerializer.readByteArray(dis);
+      }
+      readMessage(dis, dos, acceptanceCode, member);
+    }
     dos.flush();
     return acceptanceCode;
   }
@@ -246,7 +255,16 @@ public abstract class Handshake {
       return;
     }
 
-    encryptor.writeEncryptedCredentials(dos, dis, p_credentials, isNotification, member, heapdos);
+    byte acceptanceCode = encryptor.writeEncryptedCredentials(dos, dis, p_credentials, isNotification, member, heapdos);
+    if (acceptanceCode != REPLY_OK && acceptanceCode != REPLY_AUTH_NOT_REQUIRED) {
+      // Ignore the useless data
+      dis.readByte();
+      dis.readInt();
+      if (!isNotification) {
+        DataSerializer.readByteArray(dis);
+      }
+      readMessage(dis, dos, acceptanceCode, member);
+    }
     dos.flush();
   }
 

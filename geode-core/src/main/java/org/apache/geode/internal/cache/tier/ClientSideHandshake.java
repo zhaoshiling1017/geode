@@ -25,7 +25,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 
-public interface ClientSideHandshake extends Encryptor {
+public interface ClientSideHandshake {
   Encryptor getEncryptor();
 
   ClientProxyMembershipID getMembershipId();

@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
  * <code>ClientHandShake</code> represents a handshake from the client.
  *
  */
-public interface ServerSideHandshake extends Encryptor {
+public interface ServerSideHandshake {
   boolean isOK();
 
   ClientProxyMembershipID getMembershipId();

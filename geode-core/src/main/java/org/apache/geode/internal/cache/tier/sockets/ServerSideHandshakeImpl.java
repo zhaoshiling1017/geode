@@ -51,6 +51,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     this.clientVersion = clientVersion;
     this.system = sys;
     this.securityService = securityService;
+    this.encryptor = new EncryptorImpl(sys.getSecurityLogWriter());
 
     {
       int soTimeout = -1;
@@ -185,7 +186,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
   @Override
   public Encryptor getEncryptor() {
-    return this;
+    return encryptor;
   }
 
   private void sendCredentialsForWan(OutputStream out, InputStream in) {

@@ -620,7 +620,7 @@ public abstract class ServerConnection implements Runnable {
       try {
         byte[] secureBytes = this.requestMsg.getSecureBytes();
 
-        secureBytes = ((Handshake) this.handshake).decryptBytes(secureBytes);
+        secureBytes = this.handshake.getEncryptor().decryptBytes(secureBytes);
         AuthIds aIds = new AuthIds(secureBytes);
 
         long uniqueId = aIds.getUniqueId();
@@ -951,7 +951,7 @@ public abstract class ServerConnection implements Runnable {
     try {
       byte[] secureBytes = msg.getSecureBytes();
 
-      secureBytes = ((Handshake) this.handshake).decryptBytes(secureBytes);
+      secureBytes = this.handshake.getEncryptor().decryptBytes(secureBytes);
 
       // need to decrypt it first then get connectionid
       AuthIds aIds = new AuthIds(secureBytes);
@@ -1013,7 +1013,7 @@ public abstract class ServerConnection implements Runnable {
 
       byte[] secureBytes = msg.getSecureBytes();
 
-      secureBytes = ((Handshake) this.handshake).decryptBytes(secureBytes);
+      secureBytes = this.handshake.getEncryptor().decryptBytes(secureBytes);
 
       // need to decrypt it first then get connectionid
       AuthIds aIds = new AuthIds(secureBytes);
@@ -1026,7 +1026,7 @@ public abstract class ServerConnection implements Runnable {
 
       byte[] credBytes = msg.getPart(0).getSerializedForm();
 
-      credBytes = ((Handshake) this.handshake).decryptBytes(credBytes);
+      credBytes = this.handshake.getEncryptor().decryptBytes(credBytes);
 
       ByteArrayInputStream bis = new ByteArrayInputStream(credBytes);
       DataInputStream dinp = new DataInputStream(bis);
@@ -1727,7 +1727,7 @@ public abstract class ServerConnection implements Runnable {
 
       hdos.writeLong(id);
 
-      return ((Handshake) this.handshake).encryptBytes(hdos.toByteArray());
+      return this.handshake.getEncryptor().encryptBytes(hdos.toByteArray());
     } finally {
       hdos.close();
     }
