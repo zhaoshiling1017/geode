@@ -87,6 +87,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.execute.FunctionStats;
+import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -691,9 +692,9 @@ public class InternalDistributedSystem extends DistributedSystem
 
       // Initialize the Diffie-Hellman and public/private keys
       try {
-        Handshake.initCertsMap(this.config.getSecurityProps());
-        Handshake.initPrivateKey(this.config.getSecurityProps());
-        Handshake.initDHKeys(this.config);
+        EncryptorImpl.initCertsMap(this.config.getSecurityProps());
+        EncryptorImpl.initPrivateKey(this.config.getSecurityProps());
+        EncryptorImpl.initDHKeys(this.config);
       } catch (Exception ex) {
         throw new GemFireSecurityException(
             LocalizedStrings.InternalDistributedSystem_PROBLEM_IN_INITIALIZING_KEYS_FOR_CLIENT_AUTHENTICATION
