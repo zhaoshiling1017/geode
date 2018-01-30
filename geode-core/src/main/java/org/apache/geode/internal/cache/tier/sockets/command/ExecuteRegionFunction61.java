@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
@@ -39,7 +38,7 @@ import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -150,9 +149,9 @@ public class ExecuteRegionFunction61 extends BaseCommand {
         sendError(hasResult, clientMessage, message, serverConnection);
         return;
       }
-      HandShake handShake = (HandShake) serverConnection.getHandshake();
-      int earlierClientReadTimeout = handShake.getClientReadTimeout();
-      handShake.setClientReadTimeout(0);
+      Handshake handshake = (Handshake) serverConnection.getHandshake();
+      int earlierClientReadTimeout = handshake.getClientReadTimeout();
+      handshake.setClientReadTimeout(0);
       ServerToClientFunctionResultSender resultSender = null;
       Function<?> functionObject = null;
       try {
@@ -272,7 +271,7 @@ public class ExecuteRegionFunction61 extends BaseCommand {
       }
 
       finally {
-        handShake.setClientReadTimeout(earlierClientReadTimeout);
+        handshake.setClientReadTimeout(earlierClientReadTimeout);
       }
     }
   }

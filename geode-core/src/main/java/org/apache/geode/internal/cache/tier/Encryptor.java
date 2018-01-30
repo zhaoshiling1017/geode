@@ -12,33 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.Principal;
-
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-
 /**
- * <code>ClientHandShake</code> represents a handshake from the client.
+ * Diffie-Hellman data encryptor
  *
- * @since GemFire 5.7
+ * @deprecated this feature should be removed in Geode 2.0
  */
-public interface ClientHandShake {
-  public boolean isOK();
+public interface Encryptor {
+  byte[] encryptBytes(byte[] bytes) throws Exception;
 
-  public byte getCode();
-
-  public ClientProxyMembershipID getMembership();
-
-  public int getClientReadTimeout();
-
-  public Version getVersion();
-
-  public void accept(OutputStream out, InputStream in, byte epType, int qSize,
-      CommunicationMode communicationMode, Principal principal) throws IOException;
+  byte[] decryptBytes(byte[] bytes) throws Exception;
 }
