@@ -1817,7 +1817,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     releaseCommBuffer(Message.setTLCommBuffer(null));
   }
 
-  private class ClientQueueInitializerTask implements Runnable {
+  private static class ClientQueueInitializerTask implements Runnable {
     private final Socket socket;
     private final boolean isPrimaryServerToClient;
     private final AcceptorImpl acceptor;
@@ -1838,7 +1838,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
             acceptor.getAcceptorId(), acceptor.isNotifyBySubscription());
       } catch (IOException ex) {
         closeSocket(socket);
-        if (isRunning()) {
+        if (acceptor.isRunning()) {
           if (!acceptor.loggedAcceptError) {
             acceptor.loggedAcceptError = true;
             if (ex instanceof SocketTimeoutException) {

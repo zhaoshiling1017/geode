@@ -74,7 +74,7 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.GemFireSecurityException;
 
-public class EncryptorImpl implements Encryptor{
+public class EncryptorImpl implements Encryptor {
   // Parameters for the Diffie-Hellman key exchange
   private static final BigInteger dhP =
       new BigInteger("13528702063991073999718992897071702177131142188276542919088770094024269"
@@ -93,33 +93,33 @@ public class EncryptorImpl implements Encryptor{
   private static final int dhL = 1023;
 
   private Cipher _encrypt;
-  private Cipher _decrypt = null;
+  private Cipher _decrypt;
 
-  private PublicKey clientPublicKey = null;
+  private PublicKey clientPublicKey;
 
-  private String clientSKAlgo = null;
+  private String clientSKAlgo;
 
-  private static PrivateKey dhPrivateKey = null;
+  private static PrivateKey dhPrivateKey;
 
-  private static PublicKey dhPublicKey = null;
+  private static PublicKey dhPublicKey;
 
-  private static String dhSKAlgo = null;
+  private static String dhSKAlgo;
 
   // Members for server authentication using digital signature
 
-  private static String certificateFilePath = null;
+  private static String certificateFilePath;
 
-  private static HashMap certificateMap = null;
+  private static HashMap certificateMap;
 
-  private static String privateKeyAlias = null;
+  private static String privateKeyAlias;
 
-  private static String privateKeySubject = null;
+  private static String privateKeySubject;
 
-  private static PrivateKey privateKeyEncrypt = null;
+  private static PrivateKey privateKeyEncrypt;
 
-  private static String privateKeySignAlgo = null;
+  private static String privateKeySignAlgo;
 
-  private static SecureRandom random = null;
+  private static SecureRandom random;
 
   private byte appSecureMode = (byte) 0;
 
@@ -141,7 +141,7 @@ public class EncryptorImpl implements Encryptor{
   }
 
   public static byte[] decryptBytes(byte[] data, Cipher decrypt) throws Exception {
-      return decrypt.doFinal(data);
+    return decrypt.doFinal(data);
   }
 
   protected Cipher getDecryptCipher(String dhSKAlgo, PublicKey publicKey) throws Exception {
@@ -347,20 +347,18 @@ public class EncryptorImpl implements Encryptor{
   }
 
   boolean isEnabled() {
-    return dhSKAlgo == null || dhSKAlgo.length() == 0;
+    return dhSKAlgo != null && dhSKAlgo.length() > 0;
   }
 
   byte writeEncryptedCredential(DataOutputStream dos, DataInputStream dis, boolean isNotification,
-                                        DistributedMember member, HeapDataOutputStream heapdos)
-      throws IOException {
+      DistributedMember member, HeapDataOutputStream heapdos) throws IOException {
     byte acceptanceCode;
     try {
       logWriter.fine("HandShake: using Diffie-Hellman key exchange with algo " + dhSKAlgo);
       boolean requireAuthentication =
           (certificateFilePath != null && certificateFilePath.length() > 0);
       if (requireAuthentication) {
-        logWriter
-            .fine("HandShake: server authentication using digital " + "signature required");
+        logWriter.fine("HandShake: server authentication using digital " + "signature required");
       }
       // Credentials with encryption indicator
       heapdos.writeByte(CREDENTIALS_DHENCRYPT);
@@ -407,8 +405,7 @@ public class EncryptorImpl implements Encryptor{
             throw new AuthenticationFailedException(
                 "Mismatch in client " + "challenge bytes. Malicious server?");
           }
-          logWriter
-              .fine("HandShake: Successfully verified the " + "digital signature from server");
+          logWriter.fine("HandShake: Successfully verified the " + "digital signature from server");
         }
 
         // Read server challenge bytes
@@ -442,17 +439,15 @@ public class EncryptorImpl implements Encryptor{
   }
 
   byte writeEncryptedCredentials(DataOutputStream dos, DataInputStream dis,
-                                 Properties p_credentials,
-                                 boolean isNotification, DistributedMember member,
-                                 HeapDataOutputStream heapdos) throws IOException {
+      Properties p_credentials, boolean isNotification, DistributedMember member,
+      HeapDataOutputStream heapdos) throws IOException {
     byte acceptanceCode;
     try {
       logWriter.fine("HandShake: using Diffie-Hellman key exchange with algo " + dhSKAlgo);
       boolean requireAuthentication =
           (certificateFilePath != null && certificateFilePath.length() > 0);
       if (requireAuthentication) {
-        logWriter
-            .fine("HandShake: server authentication using digital " + "signature required");
+        logWriter.fine("HandShake: server authentication using digital signature required");
       }
       // Credentials with encryption indicator
       heapdos.writeByte(CREDENTIALS_DHENCRYPT);
@@ -498,8 +493,7 @@ public class EncryptorImpl implements Encryptor{
             throw new AuthenticationFailedException(
                 "Mismatch in client " + "challenge bytes. Malicious server?");
           }
-          logWriter
-              .fine("HandShake: Successfully verified the " + "digital signature from server");
+          logWriter.fine("HandShake: Successfully verified the " + "digital signature from server");
         }
 
         byte[] challenge = DataSerializer.readByteArray(dis);
@@ -535,9 +529,8 @@ public class EncryptorImpl implements Encryptor{
     return acceptanceCode;
   }
 
-  void readEncryptedCredentials(DataInputStream dis, DataOutputStream dos,
-                                DistributedSystem system, boolean requireAuthentication)
-      throws Exception {
+  void readEncryptedCredentials(DataInputStream dis, DataOutputStream dos, DistributedSystem system,
+      boolean requireAuthentication) throws Exception {
     this.appSecureMode = CREDENTIALS_DHENCRYPT;
     boolean sendAuthentication = dis.readBoolean();
     InternalLogWriter securityLogWriter = (InternalLogWriter) system.getSecurityLogWriter();
@@ -619,9 +612,7 @@ public class EncryptorImpl implements Encryptor{
   }
 
   static Properties getDecryptedCredentials(DataInputStream dis, DataOutputStream dos,
-                                            DistributedSystem system,
-                                            boolean requireAuthentication,
-                                            Properties credentials)
+      DistributedSystem system, boolean requireAuthentication, Properties credentials)
       throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException,
       SignatureException, NoSuchPaddingException, InvalidAlgorithmParameterException,
       IllegalBlockSizeException, BadPaddingException, ClassNotFoundException {

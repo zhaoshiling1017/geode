@@ -255,7 +255,8 @@ public abstract class Handshake {
       return;
     }
 
-    byte acceptanceCode = encryptor.writeEncryptedCredentials(dos, dis, p_credentials, isNotification, member, heapdos);
+    byte acceptanceCode = encryptor.writeEncryptedCredentials(dos, dis, p_credentials,
+        isNotification, member, heapdos);
     if (acceptanceCode != REPLY_OK && acceptanceCode != REPLY_AUTH_NOT_REQUIRED) {
       // Ignore the useless data
       dis.readByte();
@@ -281,8 +282,8 @@ public abstract class Handshake {
   }
 
   // This assumes that authentication is the last piece of info in handshake
-  Properties readCredential(DataInputStream dis, DataOutputStream dos,
-      DistributedSystem system) throws GemFireSecurityException, IOException {
+  Properties readCredential(DataInputStream dis, DataOutputStream dos, DistributedSystem system)
+      throws GemFireSecurityException, IOException {
 
     Properties credentials = null;
     boolean requireAuthentication = securityService.isClientSecurityRequired();
@@ -290,7 +291,7 @@ public abstract class Handshake {
       byte secureMode = dis.readByte();
       throwIfMissingRequiredCredentials(requireAuthentication, secureMode != CREDENTIALS_NONE);
       if (secureMode == CREDENTIALS_NORMAL) {
-encryptor.setAppSecureMode(CREDENTIALS_NORMAL);
+        encryptor.setAppSecureMode(CREDENTIALS_NORMAL);
       } else if (secureMode == CREDENTIALS_DHENCRYPT) {
         encryptor.readEncryptedCredentials(dis, dos, system, requireAuthentication);
       }
@@ -446,7 +447,8 @@ encryptor.setAppSecureMode(CREDENTIALS_NORMAL);
           DataSerializer.readProperties(dis); // ignore the credentials
         }
       } else if (secureMode == CREDENTIALS_DHENCRYPT) {
-        credentials = EncryptorImpl.getDecryptedCredentials(dis, dos, system, requireAuthentication, credentials);
+        credentials = EncryptorImpl.getDecryptedCredentials(dis, dos, system, requireAuthentication,
+            credentials);
       } else if (secureMode == SECURITY_MULTIUSER_NOTIFICATIONCHANNEL) {
         // hitesh there will be no credential CCP will get credential(Principal) using
         // ServerConnection..

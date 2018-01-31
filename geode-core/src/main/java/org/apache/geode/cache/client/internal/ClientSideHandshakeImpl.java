@@ -443,11 +443,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
     return super.writeCredential(dos, dis, authInit, isNotification, member, heapdos);
   }
 
-  /**
-   * Handshake implements the Diffie-Hellman encryption algorithms
-   *
-   * @return
-   */
+  @Override
   public Encryptor getEncryptor() {
     return encryptor;
   }
