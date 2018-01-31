@@ -129,14 +129,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
     // Client side handshake code uses this.currentClientVersion which can be
     // set via tests.
     if (currentClientVersion.compareTo(Version.GFE_603) >= 0) {
-      byte override = 0;
-      /*
-       * override = this.notifyBySubscriptionOverride; override = (byte)((override << 2) |
-       * this.removeUnresponsiveClientOverride); override = (byte)((override << 2) |
-       * this.clientConflation);
-       */
-      override = this.clientConflation;
-      setOverrides(new byte[] {override});
+      this.overrides = new byte[] {this.clientConflation};
     }
   }
 

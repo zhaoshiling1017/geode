@@ -128,6 +128,7 @@ public class EncryptorImpl implements Encryptor{
 
   EncryptorImpl(EncryptorImpl encryptor) {
     this.appSecureMode = encryptor.appSecureMode;
+    this.logWriter = encryptor.logWriter;
   }
 
   public EncryptorImpl(LogWriter logWriter) {

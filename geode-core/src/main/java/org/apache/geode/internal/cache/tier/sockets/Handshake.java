@@ -124,7 +124,7 @@ public abstract class Handshake {
   /**
    * @since GemFire 6.0.3 List of per client property override bits.
    */
-  private byte[] overrides;
+  protected byte[] overrides;
 
   /**
    * Test hooks for per client conflation
