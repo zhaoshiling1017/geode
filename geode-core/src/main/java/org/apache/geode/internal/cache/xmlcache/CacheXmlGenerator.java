@@ -95,7 +95,7 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.internal.index.HashIndex;

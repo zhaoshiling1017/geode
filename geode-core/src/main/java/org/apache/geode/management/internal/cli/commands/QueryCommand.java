@@ -28,7 +28,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.internal.CompiledValue;

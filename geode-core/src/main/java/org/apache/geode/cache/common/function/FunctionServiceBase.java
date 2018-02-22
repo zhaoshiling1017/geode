@@ -24,7 +24,7 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.cache.execute.FunctionService;
+
 
 import java.util.Map;
 import java.util.Properties;

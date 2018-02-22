@@ -24,7 +24,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.modules.session.catalina.callback.LocalSessionCacheLoader;
 import org.apache.geode.modules.session.catalina.callback.LocalSessionCacheWriter;

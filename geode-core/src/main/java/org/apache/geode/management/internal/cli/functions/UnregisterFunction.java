@@ -15,7 +15,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.internal.cache.execute.InternalFunction;
 
 public class UnregisterFunction implements InternalFunction {

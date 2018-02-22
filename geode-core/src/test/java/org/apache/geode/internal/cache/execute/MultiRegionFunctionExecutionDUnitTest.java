@@ -32,7 +32,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.ConfigurationProperties;

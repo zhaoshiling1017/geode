@@ -21,7 +21,7 @@ import java.util.Set;
 import com.google.protobuf.ProtocolStringList;
 
 import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;

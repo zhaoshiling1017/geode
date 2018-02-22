@@ -18,7 +18,7 @@ package org.apache.geode.cache.query;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 

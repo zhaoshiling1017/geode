@@ -19,7 +19,7 @@ import java.util.Set;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.cache.execute.ResultCollector;
 
 /**

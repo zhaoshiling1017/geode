@@ -20,7 +20,7 @@ import java.util.Set;
 import com.google.protobuf.ProtocolStringList;
 
 import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;

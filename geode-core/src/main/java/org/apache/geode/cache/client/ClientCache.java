@@ -23,6 +23,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.client.function.FunctionService;
 import org.apache.geode.cache.query.QueryService;
 
 /**
@@ -169,5 +170,8 @@ public interface ClientCache extends GemFireCache {
    * @see org.apache.geode.cache.client.Pool
    */
   Pool getDefaultPool();
+
+  //TODO Udo added client function service
+  FunctionService getClientFunctionService();
 
 }

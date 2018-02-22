@@ -27,7 +27,7 @@ import org.apache.geode.cache.client.internal.LocatorTestBase;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.functions.FireAndForgetFunctionOnAllServers;
 import org.apache.geode.test.dunit.Assert;

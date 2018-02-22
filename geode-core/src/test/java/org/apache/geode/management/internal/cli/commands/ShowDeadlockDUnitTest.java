@@ -31,7 +31,7 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetectorDUnitTest;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;

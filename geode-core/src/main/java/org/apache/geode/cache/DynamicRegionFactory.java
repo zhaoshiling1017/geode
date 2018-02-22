@@ -29,7 +29,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.Assert;

@@ -38,6 +38,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
+import org.apache.geode.cache.function.FunctionService;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.QueryMonitor;
@@ -355,4 +356,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
    *         or the result of calling PdxInstance.getObject on obj.
    */
   Object convertPdxInstanceIfNeeded(Object obj);
+
+  //TODO Udo added server function service
+  FunctionService getServerFunctionService();
 }

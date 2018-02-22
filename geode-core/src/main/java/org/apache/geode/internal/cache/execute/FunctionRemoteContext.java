@@ -23,7 +23,7 @@ import java.util.Set;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
+
 
 /**
  * FunctionContext for remote/target nodes

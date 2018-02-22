@@ -26,7 +26,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;

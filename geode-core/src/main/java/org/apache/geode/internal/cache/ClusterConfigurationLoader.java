@@ -47,7 +47,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;

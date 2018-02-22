@@ -45,7 +45,7 @@ import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.cache.execute.FunctionService;
+
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.execute.NoResult;
 import org.apache.geode.internal.logging.LogService;
