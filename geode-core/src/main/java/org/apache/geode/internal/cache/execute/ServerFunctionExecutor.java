@@ -46,18 +46,16 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
   private String[] groups;
 
-  public ServerFunctionExecutor(Pool p, boolean allServers, String... groups) {
-    this.pool = (PoolImpl) p;
+  public ServerFunctionExecutor(Pool pool, boolean allServers, String... groups) {
+    this.pool = (PoolImpl) pool;
     this.allServers = allServers;
     this.groups = groups;
   }
 
-  public ServerFunctionExecutor(Pool p, boolean allServers, ProxyCache proxyCache,
+  public ServerFunctionExecutor(Pool pool, boolean allServers, ProxyCache proxyCache,
       String... groups) {
-    this.pool = (PoolImpl) p;
-    this.allServers = allServers;
+    this(pool,allServers,groups);
     this.proxyCache = proxyCache;
-    this.groups = groups;
   }
 
   public ServerFunctionExecutor(ServerFunctionExecutor sfe) {

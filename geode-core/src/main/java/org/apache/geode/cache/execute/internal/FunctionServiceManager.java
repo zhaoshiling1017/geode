@@ -14,43 +14,20 @@
  */
 package org.apache.geode.cache.execute.internal;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionService;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.Pool;
-import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.InternalClientCache;
-import org.apache.geode.cache.client.internal.ProxyCache;
-import org.apache.geode.cache.client.internal.ProxyRegion;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutor;
-import org.apache.geode.internal.cache.execute.MemberFunctionExecutor;
-import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionExecutor;
-import org.apache.geode.internal.cache.execute.ServerFunctionExecutor;
-import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Provides the entry point into execution of user defined {@linkplain Function}s.
@@ -77,249 +54,6 @@ public class FunctionServiceManager {
 
   public FunctionServiceManager() {
     // do nothing
-  }
-
-  /**
-   * Returns an {@link Execution} object that can be used to execute a data dependent function on
-   * the specified Region.<br>
-   * When invoked from a GemFire client, the method returns an Execution instance that sends a
-   * message to one of the connected servers as specified by the {@link Pool} for the region. <br>
-   * Depending on the filters setup on the {@link Execution}, the function is executed on all
-   * GemFire members that define the data region, or a subset of members.
-   * {@link Execution#withFilter(Set)}).
-   *
-   * For DistributedRegions with DataPolicy.NORMAL, it throws UnsupportedOperationException. For
-   * DistributedRegions with DataPolicy.EMPTY, execute the function on any random member which has
-   * DataPolicy.REPLICATE <br>
-   * . For DistributedRegions with DataPolicy.REPLICATE, execute the function locally. For Regions
-   * with DataPolicy.PARTITION, it executes on members where the data resides as specified by the
-   * filter.
-   *
-   * @return Execution
-   * @throws FunctionException if the region passed in is null
-   * @since GemFire 6.0
-   */
-  public Execution onRegion(Region region) {
-    if (region == null) {
-      throw new FunctionException(
-          LocalizedStrings.FunctionService_0_PASSED_IS_NULL.toLocalizedString("Region instance "));
-    }
-
-    ProxyCache proxyCache = null;
-    String poolName = region.getAttributes().getPoolName();
-    if (poolName != null) {
-      Pool pool = PoolManager.find(poolName);
-      if (pool.getMultiuserAuthentication()) {
-        if (region instanceof ProxyRegion) {
-          ProxyRegion proxyRegion = (ProxyRegion) region;
-          region = proxyRegion.getRealRegion();
-          proxyCache = proxyRegion.getAuthenticatedCache();
-        } else {
-          throw new UnsupportedOperationException();
-        }
-      }
-    }
-
-    if (isClientRegion(region)) {
-      return new ServerRegionFunctionExecutor(region, proxyCache);
-    }
-    if (PartitionRegionHelper.isPartitionedRegion(region)) {
-      return new PartitionedRegionFunctionExecutor(region);
-    }
-    return new DistributedRegionFunctionExecutor(region);
-  }
-
-  /**
-   * Returns an {@link Execution} object that can be used to execute a data independent function on
-   * a server in the provided {@link Pool}.
-   * <p>
-   * If the server goes down while dispatching or executing the function, an Exception will be
-   * thrown.
-   *
-   * @param pool from which to chose a server for execution
-   * @return Execution
-   * @throws FunctionException if Pool instance passed in is null
-   * @since GemFire 6.0
-   */
-  public Execution onServer(Pool pool, String... groups) {
-    if (pool == null) {
-      throw new FunctionException(
-          LocalizedStrings.FunctionService_0_PASSED_IS_NULL.toLocalizedString("Pool instance "));
-    }
-
-    if (pool.getMultiuserAuthentication()) {
-      throw new UnsupportedOperationException();
-    }
-
-    return new ServerFunctionExecutor(pool, false, groups);
-  }
-
-  /**
-   * Returns an {@link Execution} object that can be used to execute a data independent function on
-   * all the servers in the provided {@link Pool}. If one of the servers goes down while dispatching
-   * or executing the function on the server, an Exception will be thrown.
-   *
-   * @param pool the set of servers to execute the function
-   * @return Execution
-   * @throws FunctionException if Pool instance passed in is null
-   * @since GemFire 6.0
-   */
-  public Execution onServers(Pool pool, String... groups) {
-    if (pool == null) {
-      throw new FunctionException(
-          LocalizedStrings.FunctionService_0_PASSED_IS_NULL.toLocalizedString("Pool instance "));
-    }
-
-    if (pool.getMultiuserAuthentication()) {
-      throw new UnsupportedOperationException();
-    }
-
-    return new ServerFunctionExecutor(pool, true, groups);
-  }
-
-  /**
-   * Returns an {@link Execution} object that can be used to execute a data independent function on
-   * a server that the given cache is connected to.
-   * <p>
-   * If the server goes down while dispatching or executing the function, an Exception will be
-   * thrown.
-   *
-   * @param regionService obtained from {@link ClientCacheFactory#create} or
-   *        {@link ClientCache#createAuthenticatedView(Properties)} .
-   * @return Execution
-   * @throws FunctionException if cache is null, is not on a client, or it does not have a default
-   *         pool
-   * @since GemFire 6.5
-   */
-  public Execution onServer(RegionService regionService, String... groups) {
-    if (regionService == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("RegionService instance "));
-    }
-    if (regionService instanceof GemFireCacheImpl) {
-      InternalClientCache internalCache = (InternalClientCache) regionService;
-      if (!internalCache.isClient()) {
-        throw new FunctionException("The cache was not a client cache");
-      } else if (internalCache.getDefaultPool() != null) {
-        return onServer(internalCache.getDefaultPool(), groups);
-      } else {
-        throw new FunctionException("The client cache does not have a default pool");
-      }
-    } else {
-      ProxyCache proxyCache = (ProxyCache) regionService;
-      return new ServerFunctionExecutor(proxyCache.getUserAttributes().getPool(), false, proxyCache,
-          groups);
-    }
-  }
-
-  /**
-   * Returns an {@link Execution} object that can be used to execute a data independent function on
-   * all the servers that the given cache is connected to. If one of the servers goes down while
-   * dispatching or executing the function on the server, an Exception will be thrown.
-   *
-   * @param regionService obtained from {@link ClientCacheFactory#create} or
-   *        {@link ClientCache#createAuthenticatedView(Properties)} .
-   * @return Execution
-   * @throws FunctionException if cache is null, is not on a client, or it does not have a default
-   *         pool
-   * @since GemFire 6.5
-   */
-  public Execution onServers(RegionService regionService, String... groups) {
-    if (regionService == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("RegionService instance "));
-    }
-    if (regionService instanceof GemFireCacheImpl) {
-      InternalClientCache internalCache = (InternalClientCache) regionService;
-      if (!internalCache.isClient()) {
-        throw new FunctionException("The cache was not a client cache");
-      } else if (internalCache.getDefaultPool() != null) {
-        return onServers(internalCache.getDefaultPool(), groups);
-      } else {
-        throw new FunctionException("The client cache does not have a default pool");
-      }
-    } else {
-      ProxyCache proxyCache = (ProxyCache) regionService;
-      return new ServerFunctionExecutor(proxyCache.getUserAttributes().getPool(), true, proxyCache,
-          groups);
-    }
-  }
-
-  /**
-   * Returns an {@link Execution} object that can be used to execute a data independent function on
-   * a {@link DistributedMember} of the {@link DistributedSystem}. If the member is not found in the
-   * system, the function execution will throw an Exception. If the member goes down while
-   * dispatching or executing the function on the member, an Exception will be thrown.
-   *
-   * @param system defines the distributed system
-   * @param distributedMember defines a member in the distributed system
-   * @return Execution
-   * @throws FunctionException if either input parameter is null
-   * @since GemFire 6.0
-   *
-   */
-  public Execution onMember(DistributedSystem system, DistributedMember distributedMember) {
-    if (system == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("DistributedSystem instance "));
-    }
-    if (distributedMember == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("DistributedMember instance "));
-    }
-    return new MemberFunctionExecutor(system, distributedMember);
-  }
-
-  /**
-   * Returns an {@link Execution} object that can be used to execute a data independent function on
-   * all members of the {@link DistributedSystem}. If one of the members goes down while dispatching
-   * or executing the function on the member, an Exception will be thrown.
-   *
-   * @param system defines the distributed system
-   * @return Execution
-   *
-   * @throws FunctionException if DistributedSystem instance passed is null
-   * @since GemFire 6.0
-   */
-  public Execution onMembers(DistributedSystem system, String... groups) {
-    if (system == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("DistributedSystem instance "));
-    }
-    if (groups.length == 0) {
-      return new MemberFunctionExecutor(system);
-    }
-    Set<DistributedMember> members = new HashSet<DistributedMember>();
-    for (String group : groups) {
-      members.addAll(system.getGroupMembers(group));
-    }
-    if (members.isEmpty()) {
-      throw new FunctionException(LocalizedStrings.FunctionService_NO_MEMBERS_FOUND_IN_GROUPS
-          .toLocalizedString(Arrays.toString(groups)));
-    }
-    return new MemberFunctionExecutor(system, members);
-  }
-
-  /**
-   * Returns an {@link Execution} object that can be used to execute a data independent function on
-   * the set of {@link DistributedMember}s of the {@link DistributedSystem}. If one of the members
-   * goes down while dispatching or executing the function, an Exception will be thrown.
-   *
-   * @param system defines the distributed system
-   * @param distributedMembers set of distributed members on which {@link Function} to be executed
-   * @throws FunctionException if DistributedSystem instance passed is null
-   * @since GemFire 6.0
-   */
-  public Execution onMembers(DistributedSystem system, Set<DistributedMember> distributedMembers) {
-    if (system == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("DistributedSystem instance "));
-    }
-    if (distributedMembers == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("distributedMembers set "));
-    }
-    return new MemberFunctionExecutor(system, distributedMembers);
   }
 
   /**
@@ -420,37 +154,5 @@ public class FunctionServiceManager {
     for (String functionId : idToFunctionMap.keySet()) {
       unregisterFunction(functionId);
     }
-  }
-
-  /**
-   * @return true if the method is called on a region has a {@link Pool}.
-   * @since GemFire 6.0
-   */
-  private boolean isClientRegion(Region region) {
-    return ((InternalRegion) region).hasServerProxy();
-  }
-
-  public Execution onMember(DistributedSystem system, String... groups) {
-    if (system == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("DistributedSystem instance "));
-    }
-    Set<DistributedMember> members = new HashSet<>();
-    for (String group : groups) {
-      List<DistributedMember> grpMembers = new ArrayList<>(system.getGroupMembers(group));
-      if (!grpMembers.isEmpty()) {
-        if (!RANDOM_onMember && grpMembers.contains(system.getDistributedMember())) {
-          members.add(system.getDistributedMember());
-        } else {
-          Collections.shuffle(grpMembers);
-          members.add(grpMembers.get(0));
-        }
-      }
-    }
-    if (members.isEmpty()) {
-      throw new FunctionException(LocalizedStrings.FunctionService_NO_MEMBERS_FOUND_IN_GROUPS
-          .toLocalizedString(Arrays.toString(groups)));
-    }
-    return new MemberFunctionExecutor(system, members);
   }
 }
