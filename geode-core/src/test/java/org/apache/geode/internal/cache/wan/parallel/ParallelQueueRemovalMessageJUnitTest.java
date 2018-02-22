@@ -65,6 +65,8 @@ import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -177,12 +179,21 @@ public class ParallelQueueRemovalMessageJUnitTest {
         new BucketRegionQueueHelper(this.cache, this.queueRegion, this.bucketRegionQueue);
   }
 
+  private GatewaySenderStats setSecondaryQueueSize(int size) {
+    GatewaySenderStats stats = new GatewaySenderStats(new DummyStatisticsFactory(), "ln");
+    stats.setSecondaryQueueSize(1);
+    when(this.queueRegion.getParallelGatewaySender().getStatistics()).thenReturn(stats);
+    assertEquals(1, stats.getEventSecondaryQueueSize());
+    return stats;
+  }
+
   @Test
   public void validateFailedBatchRemovalMessageKeysInUninitializedBucketRegionQueue()
       throws Exception {
     // Validate initial BucketRegionQueue state
     assertFalse(this.bucketRegionQueue.isInitialized());
     assertEquals(0, this.bucketRegionQueue.getFailedBatchRemovalMessageKeys().size());
+    GatewaySenderStats stats = setSecondaryQueueSize(1);
 
     // Create and process a ParallelQueueRemovalMessage (causes the failedBatchRemovalMessageKeys to
     // add a key)
@@ -190,6 +201,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
 
     // Validate BucketRegionQueue after processing ParallelQueueRemovalMessage
     assertEquals(1, this.bucketRegionQueue.getFailedBatchRemovalMessageKeys().size());
+    assertEquals(1, stats.getEventSecondaryQueueSize());
   }
 
   @Test
@@ -201,6 +213,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
     // Add an event to the BucketRegionQueue and verify BucketRegionQueue state
     this.bucketRegionQueueHelper.addEvent(KEY);
     assertEquals(1, this.bucketRegionQueue.size());
+    GatewaySenderStats stats = setSecondaryQueueSize(1);
 
     // Create and process a ParallelQueueRemovalMessage (causes the value of the entry to be set to
     // DESTROYED)
@@ -210,6 +223,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
     // Clean up destroyed tokens and validate BucketRegionQueue
     this.bucketRegionQueueHelper.cleanUpDestroyedTokensAndMarkGIIComplete();
     assertEquals(0, this.bucketRegionQueue.size());
+    assertEquals(0, stats.getEventSecondaryQueueSize());
   }
 
   @Test
@@ -225,6 +239,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
     BlockingQueue<GatewaySenderEventImpl> tempQueue =
         createTempQueueAndAddEvent(processor, mock(GatewaySenderEventImpl.class));
     assertEquals(1, tempQueue.size());
+    GatewaySenderStats stats = setSecondaryQueueSize(1);
 
     // Create and process a ParallelQueueRemovalMessage (causes the failedBatchRemovalMessageKeys to
     // add a key)
@@ -232,6 +247,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
 
     // Validate temp queue is empty after processing ParallelQueueRemovalMessage
     assertEquals(0, tempQueue.size());
+    assertEquals(1, stats.getEventSecondaryQueueSize());
   }
 
   @Test
@@ -251,6 +267,9 @@ public class ParallelQueueRemovalMessageJUnitTest {
     // Add a mock GatewaySenderEventImpl to the temp queue
     BlockingQueue<GatewaySenderEventImpl> tempQueue = createTempQueueAndAddEvent(processor, event);
     assertEquals(1, tempQueue.size());
+    GatewaySenderStats stats = mock(GatewaySenderStats.class);
+    stats.setSecondaryQueueSize(1);
+    when(this.queueRegion.getParallelGatewaySender().getStatistics()).thenReturn(stats);
 
     // Create and process a ParallelQueueRemovalMessage (causes the value of the entry to be set to
     // DESTROYED)
@@ -259,6 +278,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
 
     // Validate temp queue is empty after processing ParallelQueueRemovalMessage
     assertEquals(0, tempQueue.size());
+    assertEquals(0, stats.getEventSecondaryQueueSize());
 
     // Clean up destroyed tokens
     this.bucketRegionQueueHelper.cleanUpDestroyedTokensAndMarkGIIComplete();
