@@ -275,7 +275,7 @@ public class AuthorizationIntegrationTest {
     protobufProtocolSerializer.serialize(request, outputStream);
 
     ClientProtocol.Message response = protobufProtocolSerializer.deserialize(inputStream);
-    assertNotEquals(ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE,
+    assertEquals(ClientProtocol.Message.MessageTypeCase.OQLQUERYRESPONSE,
         response.getMessageTypeCase());
   }
 

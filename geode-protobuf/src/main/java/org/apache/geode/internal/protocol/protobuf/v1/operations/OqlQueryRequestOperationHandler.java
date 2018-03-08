@@ -45,6 +45,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.De
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionAuthorizingStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
@@ -79,9 +80,9 @@ public class OqlQueryRequestOperationHandler
               ResourcePermission.Operation.READ, regionName);
         }
       } catch (NotAuthorizedException ex) {
-        final String message = "Query not authorized on required regions";
-        logger.warn(message, ex);
-        return Failure.of(BasicTypes.ErrorCode.AUTHORIZATION_FAILED, message);
+        messageExecutionContext.getStatistics().incAuthorizationViolations();
+        throw new OperationNotAuthorizedException(
+            "The user is not authorized to complete this operation");
       } finally {
         ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
             .getConnectionStateProcessor()).restoreThreadState(threadState);
